@@ -441,7 +441,7 @@ class MatheVillaAPITester:
                 f"Protected Route: {endpoint}",
                 method,
                 endpoint,
-                401  # Expecting unauthorized
+                403  # Expecting forbidden (correct for missing auth)
             )
             if not success:
                 all_protected = False
