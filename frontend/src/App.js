@@ -4,6 +4,7 @@ import { Toaster } from './components/ui/sonner';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PasswordReset from './pages/PasswordReset';
 import StudentDashboard from './pages/StudentDashboard';
 import TopicSelection from './pages/TopicSelection';
 import Exercise from './pages/Exercise';
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/password-reset" element={<PublicRoute><PasswordReset /></PublicRoute>} />
       
       {/* Student Routes */}
       <Route path="/dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
