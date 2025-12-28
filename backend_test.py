@@ -260,7 +260,193 @@ class MatheVillaAPITester:
             200,
             headers={'Authorization': f'Bearer {self.admin_token}'}
         )
+        
+        if success and response:
+            print(f"   Found {len(response)} total tasks")
+            # Count tasks per grade
+            grade_counts = {}
+            for task in response:
+                grade = task.get('grade')
+                grade_counts[grade] = grade_counts.get(grade, 0) + 1
+            
+            print(f"   Tasks per grade: {grade_counts}")
+            
+            # Check if we have 20-25 tasks per grade as required
+            for grade in range(5, 11):
+                count = grade_counts.get(grade, 0)
+                if count < 20:
+                    print(f"   ⚠️  Grade {grade} has only {count} tasks (expected 20-25)")
+                else:
+                    print(f"   ✅ Grade {grade} has {count} tasks")
+        
         return success
+
+    def test_password_reset_request(self):
+        """Test password reset request - HIGH PRIORITY"""
+        reset_data = {
+            "email": "admin@mathevilla.de"
+        }
+        
+        success, response = self.run_test(
+            "Password Reset Request",
+            "POST",
+            "auth/password-reset-request",
+            200,
+            data=reset_data
+        )
+        
+        if success and 'reset_token' in response:
+            self.reset_token = response['reset_token']
+            print(f"   Reset token received: {self.reset_token[:20]}...")
+            return True
+        elif success:
+            print("   ⚠️  Reset request successful but no token in response (production mode)")
+            return True
+        return False
+
+    def test_password_reset_confirm(self):
+        """Test password reset confirmation - HIGH PRIORITY"""
+        if not self.reset_token:
+            print("❌ No reset token available - skipping confirmation test")
+            return False
+            
+        confirm_data = {
+            "token": self.reset_token,
+            "new_password": "newadmin123"
+        }
+        
+        success, response = self.run_test(
+            "Password Reset Confirm",
+            "POST",
+            "auth/password-reset-confirm",
+            200,
+            data=confirm_data
+        )
+        return success
+
+    def test_login_with_new_password(self):
+        """Test login with new password after reset"""
+        if not self.reset_token:
+            print("❌ No password reset performed - skipping new password test")
+            return False
+            
+        new_credentials = {
+            "email": "admin@mathevilla.de",
+            "password": "newadmin123"
+        }
+        
+        success, response = self.run_test(
+            "Login with New Password",
+            "POST",
+            "auth/login",
+            200,
+            data=new_credentials
+        )
+        
+        if success and 'access_token' in response:
+            print("   ✅ Login successful with new password")
+            # Reset password back to original for other tests
+            self.admin_token = response['access_token']
+            return True
+        return False
+
+    def test_reset_password_back(self):
+        """Reset password back to original for other tests"""
+        if not self.admin_token:
+            return False
+            
+        # Request another reset
+        reset_data = {"email": "admin@mathevilla.de"}
+        success, response = self.run_test(
+            "Reset Password Back - Request",
+            "POST",
+            "auth/password-reset-request",
+            200,
+            data=reset_data
+        )
+        
+        if success and 'reset_token' in response:
+            # Confirm with original password
+            confirm_data = {
+                "token": response['reset_token'],
+                "new_password": "admin123"
+            }
+            
+            success2, response2 = self.run_test(
+                "Reset Password Back - Confirm",
+                "POST",
+                "auth/password-reset-confirm",
+                200,
+                data=confirm_data
+            )
+            return success2
+        return False
+
+    def test_specific_grade_topic_tasks(self):
+        """Test GET /api/tasks/5/Grundrechenarten as requested"""
+        success, response = self.run_test(
+            "Get Grade 5 Grundrechenarten Tasks",
+            "GET",
+            "tasks/5/Grundrechenarten",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            print(f"   Found {len(response)} Grundrechenarten tasks for Grade 5")
+            if len(response) >= 20:
+                print("   ✅ Sufficient tasks available")
+            else:
+                print(f"   ⚠️  Only {len(response)} tasks (expected ~20-25)")
+        
+        return success
+
+    def test_ai_recommendations(self):
+        """Test AI recommendations endpoint"""
+        success, response = self.run_test(
+            "Get AI Recommendations",
+            "GET",
+            "recommendations/ai",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        return success
+
+    def test_regular_recommendations(self):
+        """Test regular recommendations endpoint"""
+        success, response = self.run_test(
+            "Get Regular Recommendations",
+            "GET",
+            "recommendations",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        return success
+
+    def test_protected_routes_without_auth(self):
+        """Test that protected routes require authentication"""
+        print("\n🔒 Testing protected routes without authentication...")
+        
+        protected_endpoints = [
+            ("tasks/5/Grundrechenarten", "GET"),
+            ("progress/overview", "GET"),
+            ("challenges/daily", "GET"),
+            ("admin/stats", "GET"),
+            ("admin/students", "GET")
+        ]
+        
+        all_protected = True
+        for endpoint, method in protected_endpoints:
+            success, response = self.run_test(
+                f"Protected Route: {endpoint}",
+                method,
+                endpoint,
+                401  # Expecting unauthorized
+            )
+            if not success:
+                all_protected = False
+                
+        return all_protected
 
 def main():
     print("🚀 Starting MatheVilla API Tests...")
