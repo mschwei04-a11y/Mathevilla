@@ -36,7 +36,6 @@ export default function StudentDashboard() {
       setProgress(progressRes.data);
       setRecommendations(recsRes.data);
 
-      // Load AI recommendation separately
       try {
         const aiRes = await api.getAIRecommendation();
         setAiRecommendation(aiRes.data.recommendation);
@@ -56,28 +55,27 @@ export default function StudentDashboard() {
     navigate('/');
   };
 
-  const xpToNextLevel = user ? (user.level * 100) - user.xp : 0;
   const xpProgress = user ? ((user.xp % 100) / 100) * 100 : 0;
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <nav className="bg-white border-b border-blue-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">M</span>
+              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold">∑</span>
               </div>
-              <span className="font-bold text-lg text-slate-900 hidden sm:block" style={{ fontFamily: 'Manrope' }}>MatheVilla</span>
+              <span className="font-bold text-lg text-blue-900 hidden sm:block" style={{ fontFamily: 'Nunito' }}>MatheVilla</span>
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-4">
@@ -86,10 +84,10 @@ export default function StudentDashboard() {
                 <span className="hidden sm:inline">Challenge</span>
               </Link>
               <Link to="/progress" className="nav-link flex items-center gap-2" data-testid="progress-nav">
-                <TrendingUp className="w-5 h-5" />
+                <TrendingUp className="w-5 h-5 text-blue-600" />
                 <span className="hidden sm:inline">Fortschritt</span>
               </Link>
-              <Button variant="ghost" onClick={handleLogout} className="text-slate-600" data-testid="logout-btn">
+              <Button variant="ghost" onClick={handleLogout} className="text-blue-600 hover:bg-blue-100" data-testid="logout-btn">
                 <LogOut className="w-5 h-5" />
               </Button>
             </div>
@@ -100,24 +98,24 @@ export default function StudentDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }} data-testid="welcome-heading">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900" style={{ fontFamily: 'Nunito' }} data-testid="welcome-heading">
             Hallo, {user?.name}!
           </h1>
-          <p className="text-slate-600 mt-1">Klasse {user?.grade} • Bereit zum Lernen?</p>
+          <p className="text-blue-600 mt-1">Klasse {user?.grade} • Bereit zum Lernen?</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-0" data-testid="xp-card">
+            <Card className="bg-blue-600 text-white border-0 shadow-lg shadow-blue-600/20" data-testid="xp-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                    <Star className="w-5 h-5 text-yellow-400" />
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Star className="w-5 h-5 text-yellow-300" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{user?.xp || 0}</p>
-                    <p className="text-slate-300 text-sm">XP gesamt</p>
+                    <p className="text-blue-100 text-sm">XP gesamt</p>
                   </div>
                 </div>
               </CardContent>
@@ -125,15 +123,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0" data-testid="level-card">
+            <Card className="bg-white border-blue-100 shadow-md" data-testid="level-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <Trophy className="w-5 h-5" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">Level {user?.level || 1}</p>
-                    <p className="text-emerald-100 text-sm">Dein Level</p>
+                    <p className="text-2xl font-bold text-blue-900">Level {user?.level || 1}</p>
+                    <p className="text-blue-500 text-sm">Dein Level</p>
                   </div>
                 </div>
               </CardContent>
@@ -141,15 +139,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="border-0 shadow-md" data-testid="tasks-card">
+            <Card className="bg-white border-blue-100 shadow-md" data-testid="tasks-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center">
-                    <Target className="w-5 h-5 text-sky-600" />
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Target className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-slate-900">{stats?.total_tasks_completed || 0}</p>
-                    <p className="text-slate-500 text-sm">Aufgaben gelöst</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats?.total_tasks_completed || 0}</p>
+                    <p className="text-blue-500 text-sm">Aufgaben gelöst</p>
                   </div>
                 </div>
               </CardContent>
@@ -157,15 +155,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="border-0 shadow-md" data-testid="success-card">
+            <Card className="bg-white border-blue-100 shadow-md" data-testid="success-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-slate-900">{stats?.success_rate || 0}%</p>
-                    <p className="text-slate-500 text-sm">Erfolgsquote</p>
+                    <p className="text-2xl font-bold text-blue-900">{stats?.success_rate || 0}%</p>
+                    <p className="text-blue-500 text-sm">Erfolgsquote</p>
                   </div>
                 </div>
               </CardContent>
@@ -174,11 +172,11 @@ export default function StudentDashboard() {
         </div>
 
         {/* Level Progress */}
-        <Card className="mb-8 border-0 shadow-md" data-testid="level-progress-card">
+        <Card className="mb-8 bg-white border-blue-100 shadow-md" data-testid="level-progress-card">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-3">
-              <span className="font-semibold text-slate-900">Fortschritt zu Level {(user?.level || 1) + 1}</span>
-              <span className="text-sm text-slate-500">{user?.xp % 100}/100 XP</span>
+              <span className="font-semibold text-blue-900">Fortschritt zu Level {(user?.level || 1) + 1}</span>
+              <span className="text-sm text-blue-500">{user?.xp % 100}/100 XP</span>
             </div>
             <Progress value={xpProgress} className="h-3" />
           </CardContent>
@@ -188,10 +186,10 @@ export default function StudentDashboard() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Topics/Start Learning */}
           <div className="lg:col-span-2">
-            <Card className="border-0 shadow-md" data-testid="topics-card">
+            <Card className="bg-white border-blue-100 shadow-md" data-testid="topics-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
-                  <BookOpen className="w-5 h-5 text-emerald-500" />
+                <CardTitle className="flex items-center gap-2 text-blue-900" style={{ fontFamily: 'Nunito' }}>
+                  <BookOpen className="w-5 h-5 text-blue-600" />
                   Themen für Klasse {user?.grade}
                 </CardTitle>
               </CardHeader>
@@ -206,18 +204,18 @@ export default function StudentDashboard() {
                     >
                       <Link 
                         to={`/exercise/${user?.grade}/${encodeURIComponent(topic.topic)}`}
-                        className="block p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-all hover:translate-x-1"
+                        className="block p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all hover:translate-x-1 border border-blue-100"
                         data-testid={`topic-${topic.topic}`}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-slate-900">{topic.topic}</h3>
-                          <ChevronRight className="w-5 h-5 text-slate-400" />
+                          <h3 className="font-semibold text-blue-900">{topic.topic}</h3>
+                          <ChevronRight className="w-5 h-5 text-blue-400" />
                         </div>
                         <div className="flex items-center gap-2">
                           <Progress value={topic.percentage} className="h-2 flex-1" />
-                          <span className="text-xs text-slate-500 w-10">{Math.round(topic.percentage)}%</span>
+                          <span className="text-xs text-blue-600 w-10">{Math.round(topic.percentage)}%</span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-xs text-blue-500 mt-2">
                           {topic.completed_tasks}/{topic.total_tasks} Aufgaben
                         </p>
                       </Link>
@@ -225,7 +223,7 @@ export default function StudentDashboard() {
                   ))}
                 </div>
                 <Link to={`/topics/${user?.grade}`}>
-                  <Button variant="outline" className="w-full mt-4" data-testid="all-topics-btn">
+                  <Button variant="outline" className="w-full mt-4 border-blue-200 text-blue-700 hover:bg-blue-50" data-testid="all-topics-btn">
                     Alle Themen anzeigen
                   </Button>
                 </Link>
@@ -236,7 +234,7 @@ export default function StudentDashboard() {
           {/* Right Sidebar */}
           <div className="space-y-6">
             {/* Daily Challenge */}
-            <Card className="border-0 shadow-md bg-gradient-to-br from-orange-500 to-amber-500 text-white" data-testid="daily-challenge-card">
+            <Card className="bg-gradient-to-br from-orange-500 to-amber-500 text-white border-0 shadow-lg" data-testid="daily-challenge-card">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Flame className="w-8 h-8" />
@@ -255,21 +253,21 @@ export default function StudentDashboard() {
 
             {/* AI Recommendation */}
             {aiRecommendation && (
-              <Card className="border-0 shadow-md" data-testid="ai-recommendation-card">
+              <Card className="bg-white border-blue-100 shadow-md" data-testid="ai-recommendation-card">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-5 h-5 text-purple-500" />
-                    <h3 className="font-semibold text-slate-900">KI-Empfehlung</h3>
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-900">KI-Empfehlung</h3>
                   </div>
-                  <p className="text-slate-600 text-sm">{aiRecommendation}</p>
+                  <p className="text-blue-700 text-sm">{aiRecommendation}</p>
                 </CardContent>
               </Card>
             )}
 
             {/* Badges */}
-            <Card className="border-0 shadow-md" data-testid="badges-card">
+            <Card className="bg-white border-blue-100 shadow-md" data-testid="badges-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+                <CardTitle className="text-base flex items-center gap-2 text-blue-900" style={{ fontFamily: 'Nunito' }}>
                   <Award className="w-5 h-5 text-yellow-500" />
                   Deine Badges
                 </CardTitle>
@@ -284,16 +282,16 @@ export default function StudentDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-500 text-sm">Löse mehr Aufgaben, um Badges zu verdienen!</p>
+                  <p className="text-blue-500 text-sm">Löse mehr Aufgaben, um Badges zu verdienen!</p>
                 )}
               </CardContent>
             </Card>
 
             {/* Recommendations */}
             {recommendations.length > 0 && (
-              <Card className="border-0 shadow-md" data-testid="recommendations-card">
+              <Card className="bg-white border-blue-100 shadow-md" data-testid="recommendations-card">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base" style={{ fontFamily: 'Manrope' }}>
+                  <CardTitle className="text-base text-blue-900" style={{ fontFamily: 'Nunito' }}>
                     Empfohlene Themen
                   </CardTitle>
                 </CardHeader>
@@ -303,10 +301,10 @@ export default function StudentDashboard() {
                       <Link
                         key={rec.topic}
                         to={`/exercise/${user?.grade}/${encodeURIComponent(rec.topic)}`}
-                        className="block p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors"
+                        className="block p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-100"
                       >
-                        <p className="font-medium text-slate-900 text-sm">{rec.topic}</p>
-                        <p className="text-xs text-slate-500 mt-1">{rec.reason}</p>
+                        <p className="font-medium text-blue-900 text-sm">{rec.topic}</p>
+                        <p className="text-xs text-blue-500 mt-1">{rec.reason}</p>
                       </Link>
                     ))}
                   </div>
