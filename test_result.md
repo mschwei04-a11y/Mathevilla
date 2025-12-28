@@ -231,15 +231,18 @@ frontend:
 
   - task: "Password Reset Page"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/PasswordReset.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Full UI with request form, success message, and confirm form with token"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED AND WORKING: Password reset flow fully functional. Can navigate from login page via 'Passwort vergessen?' link, enter admin@mathevilla.de email, submit request successfully, and receive success message 'E-Mail gesendet!'. UI displays properly with all states (request form, success message, token confirmation form)."
 
   - task: "Student Dashboard"
     implemented: true
