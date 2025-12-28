@@ -265,11 +265,14 @@ frontend:
     file: "/app/frontend/src/pages/Exercise.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Multiple choice and free text exercises with instant feedback"
+        - working: "NA"
+          agent: "testing"
+          comment: "CANNOT TEST: Exercise page testing blocked by student registration issues. Unable to create student account to test exercise functionality due to dropdown interaction problems in registration form."
 
   - task: "Admin Dashboard"
     implemented: true
