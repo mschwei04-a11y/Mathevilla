@@ -243,6 +243,99 @@ async def update_grade(grade: int, current_user: dict = Depends(get_current_user
     await db.users.update_one({"id": current_user["id"]}, {"$set": {"grade": grade}})
     return {"message": "Klassenstufe aktualisiert", "grade": grade}
 
+# ================== PASSWORD RESET ==================
+
+@api_router.post("/auth/password-reset-request")
+async def request_password_reset(data: PasswordResetRequest):
+    """Request a password reset - generates a reset token"""
+    user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    if not user:
+        # Return success even if user doesn't exist for security
+        return {"message": "Falls ein Konto mit dieser E-Mail existiert, wurde ein Reset-Link gesendet."}
+    
+    # Generate reset token
+    reset_token = str(uuid.uuid4())
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    # Store reset token
+    await db.password_resets.insert_one({
+        "token": reset_token,
+        "user_id": user["id"],
+        "email": data.email,
+        "expires_at": expires_at.isoformat(),
+        "used": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # In production, send email here
+    # For now, return the token (in production this would be sent via email)
+    logger.info(f"Password reset requested for {data.email}, token: {reset_token}")
+    
+    return {
+        "message": "Falls ein Konto mit dieser E-Mail existiert, wurde ein Reset-Link gesendet.",
+        "reset_token": reset_token,  # Remove in production - only for demo
+        "expires_in": "1 Stunde"
+    }
+
+@api_router.post("/auth/password-reset-confirm")
+async def confirm_password_reset(data: PasswordResetConfirm):
+    """Confirm password reset with token and new password"""
+    # Find reset token
+    reset_doc = await db.password_resets.find_one({
+        "token": data.token,
+        "used": False
+    }, {"_id": 0})
+    
+    if not reset_doc:
+        raise HTTPException(status_code=400, detail="Ungültiger oder abgelaufener Reset-Token")
+    
+    # Check expiration
+    expires_at = datetime.fromisoformat(reset_doc["expires_at"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Reset-Token ist abgelaufen")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Passwort muss mindestens 6 Zeichen haben")
+    
+    # Update password
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one(
+        {"id": reset_doc["user_id"]},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    # Mark token as used
+    await db.password_resets.update_one(
+        {"token": data.token},
+        {"$set": {"used": True}}
+    )
+    
+    return {"message": "Passwort erfolgreich geändert. Du kannst dich jetzt anmelden."}
+
+@api_router.put("/auth/change-password")
+async def change_password(data: PasswordChange, current_user: dict = Depends(get_current_user)):
+    """Change password for logged-in user"""
+    # Get full user with password hash
+    user = await db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+    
+    # Verify old password
+    if not verify_password(data.old_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Aktuelles Passwort ist falsch")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Neues Passwort muss mindestens 6 Zeichen haben")
+    
+    # Update password
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one(
+        {"id": current_user["id"]},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    return {"message": "Passwort erfolgreich geändert"}
+
 # ================== TASK ROUTES ==================
 
 @api_router.get("/tasks/grades")
