@@ -844,6 +844,119 @@ async def seed_database():
     
     return {"message": "Seed-Daten erfolgreich eingefügt", "task_count": len(seed_tasks)}
 
+@api_router.post("/seed/additional")
+async def seed_additional_tasks():
+    """Add more tasks to reach 20-25 per grade"""
+    additional_tasks = get_additional_tasks()
+    
+    for task in additional_tasks:
+        task["id"] = str(uuid.uuid4())
+        task["created_at"] = datetime.now(timezone.utc).isoformat()
+        task["created_by"] = "system"
+    
+    await db.tasks.insert_many(additional_tasks)
+    
+    # Count tasks per grade
+    counts = {}
+    for grade in range(5, 11):
+        counts[f"grade_{grade}"] = await db.tasks.count_documents({"grade": grade})
+    
+    return {"message": "Zusätzliche Aufgaben eingefügt", "added": len(additional_tasks), "counts": counts}
+
+def get_additional_tasks():
+    """Additional tasks to bring each grade to 20-25 tasks"""
+    tasks = []
+    
+    # Additional Klasse 5 tasks
+    tasks.extend([
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Was ergibt 234 + 567?", "task_type": "free_text", "options": None, "correct_answer": "801", "explanation": "234 + 567 = 801", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Was ergibt 1000 - 456?", "task_type": "free_text", "options": None, "correct_answer": "544", "explanation": "1000 - 456 = 544", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Was ergibt 15 × 6?", "task_type": "multiple_choice", "options": ["80", "90", "85", "95"], "correct_answer": "90", "explanation": "15 × 6 = 90", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Was ergibt 72 ÷ 8?", "task_type": "free_text", "options": None, "correct_answer": "9", "explanation": "72 ÷ 8 = 9", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Brüche einführen", "question": "Was ist 1/2 von 50?", "task_type": "free_text", "options": None, "correct_answer": "25", "explanation": "1/2 von 50 = 50 ÷ 2 = 25", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Brüche einführen", "question": "Erweitere 2/3 mit 4.", "task_type": "free_text", "options": None, "correct_answer": "8/12", "explanation": "2/3 × 4/4 = 8/12", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 5, "topic": "Dezimalzahlen", "question": "Was ergibt 3,5 - 1,2?", "task_type": "free_text", "options": None, "correct_answer": "2,3", "explanation": "3,5 - 1,2 = 2,3", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Geometrie Grundlagen", "question": "Berechne die Fläche eines Quadrats mit a = 5 cm.", "task_type": "free_text", "options": None, "correct_answer": "25", "explanation": "A = a² = 5² = 25 cm²", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Größen und Einheiten", "question": "Wie viele Minuten sind 2,5 Stunden?", "task_type": "free_text", "options": None, "correct_answer": "150", "explanation": "2,5 × 60 = 150 Minuten", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Diagramme", "question": "In einem Balkendiagramm zeigt ein Balken 30. Der andere ist doppelt so lang. Welchen Wert zeigt er?", "task_type": "free_text", "options": None, "correct_answer": "60", "explanation": "30 × 2 = 60", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # Additional Klasse 6 tasks
+    tasks.extend([
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Was ergibt 1/2 + 1/4?", "task_type": "multiple_choice", "options": ["2/6", "3/4", "1/3", "2/4"], "correct_answer": "3/4", "explanation": "1/2 = 2/4, also 2/4 + 1/4 = 3/4", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Berechne 2/5 × 3/4.", "task_type": "free_text", "options": None, "correct_answer": "6/20", "explanation": "2/5 × 3/4 = 6/20 = 3/10", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Dezimalzahlen erweitert", "question": "Was ergibt 4,2 ÷ 0,7?", "task_type": "free_text", "options": None, "correct_answer": "6", "explanation": "4,2 ÷ 0,7 = 42 ÷ 7 = 6", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Prozentrechnung Einführung", "question": "Was sind 50% von 120?", "task_type": "free_text", "options": None, "correct_answer": "60", "explanation": "50% = 1/2, also 120 ÷ 2 = 60", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Prozentrechnung Einführung", "question": "Was sind 10% von 250?", "task_type": "free_text", "options": None, "correct_answer": "25", "explanation": "10% = 1/10, also 250 ÷ 10 = 25", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Winkel", "question": "Wie groß ist ein gestreckter Winkel?", "task_type": "multiple_choice", "options": ["90°", "180°", "270°", "360°"], "correct_answer": "180°", "explanation": "Ein gestreckter Winkel hat 180°", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Flächen", "question": "Berechne den Umfang eines Rechtecks mit a = 6 cm und b = 4 cm.", "task_type": "free_text", "options": None, "correct_answer": "20", "explanation": "U = 2(a + b) = 2(6 + 4) = 20 cm", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Teilbarkeit", "question": "Ist 245 durch 5 teilbar?", "task_type": "multiple_choice", "options": ["Ja", "Nein"], "correct_answer": "Ja", "explanation": "245 endet auf 5, also ist es durch 5 teilbar", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Teilbarkeit", "question": "Was ist das kgV von 4 und 6?", "task_type": "free_text", "options": None, "correct_answer": "12", "explanation": "kgV(4,6) = 12", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Wandle 7/4 in eine gemischte Zahl um.", "task_type": "free_text", "options": None, "correct_answer": "1 3/4", "explanation": "7/4 = 1 + 3/4 = 1 3/4", "xp_reward": 15, "difficulty": "mittel"},
+    ])
+    
+    # Additional Klasse 7 tasks
+    tasks.extend([
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Was ergibt (-8) - (-3)?", "task_type": "free_text", "options": None, "correct_answer": "-5", "explanation": "(-8) - (-3) = -8 + 3 = -5", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Was ergibt (-12) ÷ 4?", "task_type": "free_text", "options": None, "correct_answer": "-3", "explanation": "(-12) ÷ 4 = -3", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Terme und Gleichungen", "question": "Löse: 2x + 3 = 11", "task_type": "free_text", "options": None, "correct_answer": "4", "explanation": "2x + 3 = 11 → 2x = 8 → x = 4", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Terme und Gleichungen", "question": "Vereinfache: 4a + 2b - a + 3b", "task_type": "free_text", "options": None, "correct_answer": "3a + 5b", "explanation": "4a - a = 3a, 2b + 3b = 5b", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 7, "topic": "Proportionalität", "question": "5 Arbeiter brauchen 8 Tage. Wie lange brauchen 4 Arbeiter?", "task_type": "free_text", "options": None, "correct_answer": "10", "explanation": "Antiproportional: 5 × 8 = 4 × x → x = 10", "xp_reward": 20, "difficulty": "schwer"},
+        {"grade": 7, "topic": "Dreiecke", "question": "Welches Dreieck hat drei gleich lange Seiten?", "task_type": "multiple_choice", "options": ["Gleichschenkliges", "Gleichseitiges", "Rechtwinkliges"], "correct_answer": "Gleichseitiges", "explanation": "Ein gleichseitiges Dreieck hat drei gleich lange Seiten", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Prozentrechnung", "question": "Ein Preis steigt von 50€ auf 60€. Um wie viel Prozent?", "task_type": "free_text", "options": None, "correct_answer": "20", "explanation": "Erhöhung: 10€. 10/50 = 0,2 = 20%", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 7, "topic": "Statistik", "question": "Berechne den Median von: 3, 7, 2, 9, 5", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "Sortiert: 2, 3, 5, 7, 9. Median ist der mittlere Wert: 5", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 7, "topic": "Statistik", "question": "Was ist die Spannweite von: 12, 5, 8, 15, 3?", "task_type": "free_text", "options": None, "correct_answer": "12", "explanation": "Spannweite = Maximum - Minimum = 15 - 3 = 12", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Berechne: |−7| + |3|", "task_type": "free_text", "options": None, "correct_answer": "10", "explanation": "|−7| = 7 und |3| = 3, also 7 + 3 = 10", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # Additional Klasse 8 tasks
+    tasks.extend([
+        {"grade": 8, "topic": "Lineare Funktionen", "question": "Wo schneidet y = 3x - 6 die x-Achse?", "task_type": "free_text", "options": None, "correct_answer": "2", "explanation": "0 = 3x - 6 → x = 2", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Lineare Funktionen", "question": "Sind y = 2x + 1 und y = 2x - 3 parallel?", "task_type": "multiple_choice", "options": ["Ja", "Nein"], "correct_answer": "Ja", "explanation": "Beide haben Steigung m = 2, also sind sie parallel", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Lineare Gleichungssysteme", "question": "Löse: x + y = 10 und x - y = 4. Was ist x?", "task_type": "free_text", "options": None, "correct_answer": "7", "explanation": "Addiere: 2x = 14 → x = 7", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Lineare Gleichungssysteme", "question": "Löse: 2x + y = 8 und x + y = 5. Was ist y?", "task_type": "free_text", "options": None, "correct_answer": "2", "explanation": "Subtrahiere: x = 3. Einsetzen: y = 2", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Vierecke", "question": "Was ist die Diagonale eines Quadrats mit a = 4 cm? (Antwort als √)", "task_type": "free_text", "options": None, "correct_answer": "4√2", "explanation": "d = a√2 = 4√2", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Kreis", "question": "Was ist der Durchmesser eines Kreises mit r = 5 cm?", "task_type": "free_text", "options": None, "correct_answer": "10", "explanation": "d = 2r = 2 × 5 = 10 cm", "xp_reward": 5, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Wahrscheinlichkeit", "question": "Wie groß ist P(gerade Zahl) beim Würfeln?", "task_type": "free_text", "options": None, "correct_answer": "1/2", "explanation": "3 gerade Zahlen (2,4,6) von 6. P = 3/6 = 1/2", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Wahrscheinlichkeit", "question": "Eine Münze wird 3-mal geworfen. P(3× Kopf)?", "task_type": "free_text", "options": None, "correct_answer": "1/8", "explanation": "P = (1/2)³ = 1/8", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Potenzen", "question": "Was ergibt 5⁰?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "Jede Zahl hoch 0 ist 1", "xp_reward": 5, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Potenzen", "question": "Was ergibt 2⁴ ÷ 2²?", "task_type": "free_text", "options": None, "correct_answer": "4", "explanation": "2⁴ ÷ 2² = 2² = 4", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # Additional Klasse 9 tasks
+    tasks.extend([
+        {"grade": 9, "topic": "Quadratische Funktionen", "question": "Was ist der Scheitelpunkt von y = x² - 4x + 4?", "task_type": "free_text", "options": None, "correct_answer": "(2,0)", "explanation": "y = (x-2)², Scheitelpunkt bei (2, 0)", "xp_reward": 20, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Quadratische Funktionen", "question": "Ist die Parabel y = -x² + 3 nach oben oder unten geöffnet?", "task_type": "multiple_choice", "options": ["Nach oben", "Nach unten"], "correct_answer": "Nach unten", "explanation": "a = -1 < 0, also nach unten geöffnet", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Quadratische Gleichungen", "question": "Löse: x² - 9 = 0", "task_type": "free_text", "options": None, "correct_answer": "±3", "explanation": "x² = 9 → x = ±3", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Quadratische Gleichungen", "question": "Löse: x² + 2x - 8 = 0", "task_type": "multiple_choice", "options": ["x = 2 oder x = -4", "x = -2 oder x = 4", "x = 1 oder x = -8"], "correct_answer": "x = 2 oder x = -4", "explanation": "(x-2)(x+4) = 0", "xp_reward": 20, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Satz des Pythagoras", "question": "Ist ein Dreieck mit a=6, b=8, c=10 rechtwinklig?", "task_type": "multiple_choice", "options": ["Ja", "Nein"], "correct_answer": "Ja", "explanation": "6² + 8² = 36 + 64 = 100 = 10²", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Satz des Pythagoras", "question": "Berechne die Diagonale d in einem Rechteck mit a=3 und b=4.", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "d² = 3² + 4² = 25, d = 5", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Wurzeln", "question": "Was ist √64?", "task_type": "free_text", "options": None, "correct_answer": "8", "explanation": "8 × 8 = 64", "xp_reward": 5, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Wurzeln", "question": "Vereinfache √72.", "task_type": "free_text", "options": None, "correct_answer": "6√2", "explanation": "√72 = √(36×2) = 6√2", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Ähnlichkeit", "question": "Zwei ähnliche Dreiecke haben Verhältnis 1:3. Wenn die kleine Fläche 4 cm² ist, wie groß ist die große?", "task_type": "free_text", "options": None, "correct_answer": "36", "explanation": "Flächenverhältnis = 1²:3² = 1:9. 4 × 9 = 36 cm²", "xp_reward": 20, "difficulty": "schwer"},
+        {"grade": 9, "topic": "Trigonometrie", "question": "Was ist sin(90°)?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "sin(90°) = 1", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Trigonometrie", "question": "Was ist cos(0°)?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "cos(0°) = 1", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Trigonometrie", "question": "tan(45°) = ?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "tan(45°) = sin(45°)/cos(45°) = 1", "xp_reward": 15, "difficulty": "mittel"},
+    ])
+    
+    # Additional Klasse 10 tasks
+    tasks.extend([
+        {"grade": 10, "topic": "Exponentialfunktionen", "question": "Was ist 3⁻²?", "task_type": "free_text", "options": None, "correct_answer": "1/9", "explanation": "3⁻² = 1/3² = 1/9", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Exponentialfunktionen", "question": "Löse: 3^x = 81", "task_type": "free_text", "options": None, "correct_answer": "4", "explanation": "3⁴ = 81, also x = 4", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 10, "topic": "Logarithmen", "question": "Was ist log₁₀(1000)?", "task_type": "free_text", "options": None, "correct_answer": "3", "explanation": "10³ = 1000", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Logarithmen", "question": "Was ist ln(e)?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "ln(e) = 1", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Körperberechnungen", "question": "Volumen eines Zylinders mit r=3 cm und h=5 cm? (π ≈ 3,14)", "task_type": "free_text", "options": None, "correct_answer": "141,3", "explanation": "V = πr²h = 3,14 × 9 × 5 = 141,3 cm³", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 10, "topic": "Körperberechnungen", "question": "Oberfläche eines Würfels mit a = 4 cm?", "task_type": "free_text", "options": None, "correct_answer": "96", "explanation": "O = 6a² = 6 × 16 = 96 cm²", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Stochastik", "question": "Was ist der Erwartungswert bei n=10 und p=0,3?", "task_type": "free_text", "options": None, "correct_answer": "3", "explanation": "E(X) = n × p = 10 × 0,3 = 3", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 10, "topic": "Stochastik", "question": "Was ist die Standardabweichung wenn Varianz = 16?", "task_type": "free_text", "options": None, "correct_answer": "4", "explanation": "σ = √16 = 4", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Wachstum", "question": "K₀ = 500€ wächst mit 4% pro Jahr. K nach 1 Jahr?", "task_type": "free_text", "options": None, "correct_answer": "520", "explanation": "K = 500 × 1,04 = 520€", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Wachstum", "question": "Halbwertszeit: Nach wie vielen HWZ ist 1/8 übrig?", "task_type": "free_text", "options": None, "correct_answer": "3", "explanation": "1/2³ = 1/8, also 3 Halbwertszeiten", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 10, "topic": "Vektorrechnung", "question": "Berechne: 3 × (2, 4)", "task_type": "free_text", "options": None, "correct_answer": "(6,12)", "explanation": "3 × (2,4) = (6, 12)", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Vektorrechnung", "question": "Was ist der Betrag von (6, 8)?", "task_type": "free_text", "options": None, "correct_answer": "10", "explanation": "|v| = √(36+64) = √100 = 10", "xp_reward": 15, "difficulty": "mittel"},
+    ])
+    
+    return tasks
+
 def get_seed_tasks():
     tasks = []
     
