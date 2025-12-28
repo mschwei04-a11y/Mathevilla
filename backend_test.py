@@ -12,6 +12,7 @@ class MatheVillaAPITester:
         self.tests_passed = 0
         self.student_id = None
         self.admin_id = None
+        self.reset_token = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
