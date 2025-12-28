@@ -454,37 +454,68 @@ def main():
     
     tester = MatheVillaAPITester()
     
-    # Test sequence
+    # Test sequence - HIGH PRIORITY TESTS FIRST
     tests = [
         ("API Health", tester.test_api_health),
         ("Seed Database", tester.test_seed_database),
-        ("Student Registration", tester.test_student_registration),
+        
+        # HIGH PRIORITY: Password Reset Flow
+        ("Password Reset Request", tester.test_password_reset_request),
+        ("Password Reset Confirm", tester.test_password_reset_confirm),
+        ("Login with New Password", tester.test_login_with_new_password),
+        ("Reset Password Back", tester.test_reset_password_back),
+        
+        # Authentication Tests
         ("Admin Login", tester.test_admin_login),
+        ("Student Registration", tester.test_student_registration),
+        
+        # Protected Routes Test
+        ("Protected Routes Without Auth", tester.test_protected_routes_without_auth),
+        
+        # Task System Tests
+        ("Admin Tasks (~20-25 per grade)", tester.test_admin_tasks),
+        ("Grade 5 Grundrechenarten Tasks", tester.test_specific_grade_topic_tasks),
         ("Get Grades", tester.test_get_grades),
         ("Get Topics", tester.test_get_topics),
         ("Get Tasks", tester.test_get_tasks),
-        ("Submit Answer", tester.test_submit_answer),
-        ("Get Progress", tester.test_get_progress),
-        ("Get User Stats", tester.test_get_user_stats),
-        ("Daily Challenge", tester.test_daily_challenge),
+        
+        # Admin Dashboard Tests
         ("Admin Stats", tester.test_admin_stats),
         ("Admin Students", tester.test_admin_students),
-        ("Admin Tasks", tester.test_admin_tasks),
+        
+        # Student Features Tests
+        ("Submit Answer", tester.test_submit_answer),
+        ("Get Progress Overview", tester.test_get_progress),
+        ("Get User Stats", tester.test_get_user_stats),
+        ("Daily Challenge", tester.test_daily_challenge),
+        
+        # AI and Recommendations
+        ("AI Recommendations", tester.test_ai_recommendations),
+        ("Regular Recommendations", tester.test_regular_recommendations),
     ]
     
     failed_tests = []
+    critical_failures = []
     
     for test_name, test_func in tests:
         try:
             if not test_func():
                 failed_tests.append(test_name)
+                # Mark critical failures
+                if any(keyword in test_name.lower() for keyword in ['password reset', 'admin login', 'protected routes']):
+                    critical_failures.append(test_name)
         except Exception as e:
             print(f"❌ {test_name} failed with exception: {e}")
             failed_tests.append(test_name)
+            if any(keyword in test_name.lower() for keyword in ['password reset', 'admin login', 'protected routes']):
+                critical_failures.append(test_name)
     
     # Print results
     print("\n" + "=" * 50)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} passed")
+    
+    if critical_failures:
+        print(f"🚨 CRITICAL FAILURES: {', '.join(critical_failures)}")
     
     if failed_tests:
         print(f"❌ Failed tests: {', '.join(failed_tests)}")
