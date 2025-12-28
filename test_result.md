@@ -297,12 +297,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Password Reset Page"
     - "Student Dashboard"
     - "Exercise Page"
-    - "Admin Dashboard"
-  stuck_tasks: []
-  test_all: true
+  stuck_tasks:
+    - "Student Dashboard"
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
