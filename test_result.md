@@ -203,15 +203,18 @@ backend:
 
   - task: "AI Recommendations"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Uses OpenAI GPT via Emergent LLM key for personalized recommendations"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED AND WORKING: Both AI recommendations (/api/recommendations/ai) and regular recommendations (/api/recommendations) working. AI provides personalized German responses using OpenAI GPT."
 
 frontend:
   - task: "Login Page with Forgot Password Link"
