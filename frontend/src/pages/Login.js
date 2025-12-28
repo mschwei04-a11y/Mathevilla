@@ -36,55 +36,55 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">M</span>
+        <Link to="/" className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-2xl">∑</span>
           </div>
-          <span className="font-bold text-2xl text-slate-900" style={{ fontFamily: 'Manrope' }}>MatheVilla</span>
+          <span className="font-bold text-2xl text-blue-900" style={{ fontFamily: 'Nunito' }}>MatheVilla</span>
         </Link>
 
-        <Card className="shadow-xl border-0">
+        <Card className="shadow-xl border-blue-100">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold text-center" style={{ fontFamily: 'Manrope' }}>Anmelden</CardTitle>
-            <CardDescription className="text-center">Melde dich mit deinem Konto an</CardDescription>
+            <CardTitle className="text-2xl font-bold text-center text-blue-900" style={{ fontFamily: 'Nunito' }}>Anmelden</CardTitle>
+            <CardDescription className="text-center text-blue-600">Melde dich mit deinem Konto an</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">E-Mail</Label>
+                <Label htmlFor="email" className="text-blue-900">E-Mail</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="deine@email.de"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12"
+                    className="pl-10 h-12 border-blue-200 focus:border-blue-500"
                     data-testid="login-email-input"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Passwort</Label>
+                <Label htmlFor="password" className="text-blue-900">Passwort</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
+                    className="pl-10 pr-10 h-12 border-blue-200 focus:border-blue-500"
                     data-testid="login-password-input"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -93,7 +93,7 @@ export default function Login() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-slate-900 hover:bg-slate-800 font-semibold text-base"
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-semibold text-base"
                 disabled={loading}
                 data-testid="login-submit-btn"
               >
@@ -102,15 +102,15 @@ export default function Login() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-slate-500">Noch kein Konto? </span>
-              <Link to="/register" className="text-emerald-600 hover:text-emerald-700 font-semibold" data-testid="register-link">
+              <span className="text-blue-600">Noch kein Konto? </span>
+              <Link to="/register" className="text-blue-700 hover:text-blue-800 font-semibold" data-testid="register-link">
                 Jetzt registrieren
               </Link>
             </div>
 
-            <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-              <p className="text-xs text-slate-500 text-center mb-2">Demo-Zugangsdaten:</p>
-              <p className="text-xs text-slate-600 text-center">Admin: admin@mathevilla.de / admin123</p>
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <p className="text-xs text-blue-600 text-center mb-2">Demo-Zugangsdaten:</p>
+              <p className="text-xs text-blue-700 text-center">Admin: admin@mathevilla.de / admin123</p>
             </div>
           </CardContent>
         </Card>

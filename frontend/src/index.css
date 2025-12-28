@@ -1,34 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: 210 40% 98%;
-  --foreground: 222.2 84% 4.9%;
+  /* Blue & White School-Friendly Palette */
+  --background: 210 50% 98%;
+  --foreground: 215 25% 17%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 215 25% 17%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222 47% 11%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 160 84% 39%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 199 89% 48%;
-  --accent-foreground: 222 47% 11%;
+  --popover-foreground: 215 25% 17%;
+  --primary: 217 91% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 100% 96%;
+  --secondary-foreground: 217 91% 50%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 217 91% 60%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 160 84% 39%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 217 91% 50%;
   --radius: 0.75rem;
-  --success: 160 84% 39%;
+  --success: 142 76% 36%;
   --warning: 38 92% 50%;
-  --chart-1: 222 47% 11%;
-  --chart-2: 160 84% 39%;
+  --chart-1: 217 91% 50%;
+  --chart-2: 142 76% 36%;
   --chart-3: 199 89% 48%;
   --chart-4: 38 92% 50%;
   --chart-5: 0 84% 60%;
@@ -41,11 +42,11 @@
   
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Public Sans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Nunito', sans-serif;
     @apply font-bold tracking-tight;
   }
 }
@@ -56,27 +57,27 @@
   }
   
   .btn-primary {
-    @apply bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 py-3 font-bold shadow-lg hover:shadow-xl transition-all active:scale-95;
+    @apply bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-6 py-3 font-semibold shadow-md hover:shadow-lg transition-all active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-emerald-500 text-white hover:bg-emerald-600 rounded-full px-8 py-3 font-bold shadow-lg hover:shadow-xl transition-all active:scale-95;
+    @apply bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg px-6 py-3 font-semibold transition-all active:scale-95;
   }
   
   .input-field {
-    @apply bg-slate-50 border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 rounded-lg h-12 px-4;
+    @apply bg-white border-blue-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg h-12 px-4;
   }
   
   .topic-card {
-    @apply relative overflow-hidden cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1 rounded-xl;
+    @apply relative overflow-hidden cursor-pointer border border-blue-100 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 rounded-xl bg-white;
   }
   
   .exercise-card {
-    @apply max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 border-t-4 border-emerald-500;
+    @apply max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 border-t-4 border-blue-500;
   }
   
   .stat-card {
-    @apply bg-white rounded-xl p-6 shadow-md border border-slate-100;
+    @apply bg-white rounded-xl p-6 shadow-md border border-blue-50;
   }
   
   .badge-gold {
@@ -91,11 +92,11 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100 rounded-full;
+  @apply bg-blue-50 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400;
+  @apply bg-blue-300 rounded-full hover:bg-blue-400;
 }
 
 /* Animations */
@@ -109,8 +110,8 @@
 }
 
 @keyframes pulse-success {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
 }
 
 .pulse-success {

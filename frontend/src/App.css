@@ -1,33 +1,31 @@
-/* MatheVilla App Styles */
+/* MatheVilla App Styles - Blue & White Theme */
 
 .grade-selector-card {
-  @apply p-6 cursor-pointer transition-all duration-300 hover:scale-105;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  @apply p-6 cursor-pointer transition-all duration-300 hover:scale-105 bg-white border-2 border-blue-100 hover:border-blue-400;
 }
 
 .grade-selector-card:hover {
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.15);
 }
 
 .topic-gradient {
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.8) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(37, 99, 235, 0.9) 100%);
 }
 
 .xp-bar {
-  @apply h-3 rounded-full overflow-hidden bg-slate-200;
+  @apply h-3 rounded-full overflow-hidden bg-blue-100;
 }
 
 .xp-bar-fill {
-  @apply h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500;
+  @apply h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500;
 }
 
 .level-badge {
-  @apply inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-white;
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  @apply inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-white bg-blue-600;
 }
 
 .difficulty-leicht {
-  @apply text-emerald-600 bg-emerald-50 border-emerald-200;
+  @apply text-green-600 bg-green-50 border-green-200;
 }
 
 .difficulty-mittel {
@@ -39,7 +37,7 @@
 }
 
 .answer-correct {
-  @apply bg-emerald-50 border-2 border-emerald-500 text-emerald-800;
+  @apply bg-green-50 border-2 border-green-500 text-green-800;
 }
 
 .answer-wrong {
@@ -47,24 +45,24 @@
 }
 
 .sidebar-link {
-  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors;
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-700 hover:text-white transition-colors;
 }
 
 .sidebar-link.active {
-  @apply bg-slate-900 text-white hover:bg-slate-800;
+  @apply bg-white text-blue-800 hover:bg-white font-semibold;
 }
 
 .nav-link {
-  @apply px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors font-medium;
+  @apply px-4 py-2 rounded-lg text-blue-700 hover:text-blue-900 hover:bg-blue-100 transition-colors font-medium;
 }
 
 .nav-link.active {
-  @apply text-emerald-600 bg-emerald-50;
+  @apply text-blue-700 bg-blue-100;
 }
 
 /* Option buttons for multiple choice */
 .option-btn {
-  @apply w-full text-left px-6 py-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 font-medium;
+  @apply w-full text-left px-6 py-4 rounded-xl border-2 border-blue-100 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 font-medium;
 }
 
 .option-btn:hover {
@@ -72,13 +70,23 @@
 }
 
 .option-btn.selected {
-  @apply border-emerald-500 bg-emerald-50 text-emerald-800;
+  @apply border-blue-500 bg-blue-50 text-blue-800;
 }
 
 .option-btn.correct {
-  @apply border-emerald-500 bg-emerald-100 text-emerald-800;
+  @apply border-green-500 bg-green-100 text-green-800;
 }
 
 .option-btn.wrong {
   @apply border-red-500 bg-red-100 text-red-800;
+}
+
+/* Math Logo Animation */
+.math-logo {
+  @apply relative;
+}
+
+.math-logo::before {
+  content: '';
+  @apply absolute inset-0 bg-blue-400 rounded-xl opacity-20 blur-xl;
 }
