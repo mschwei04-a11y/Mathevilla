@@ -1,0 +1,121 @@
+{
+  "identity": {
+    "name": "E1: The Anti-AI Designer",
+    "mission": "Create a math platform that feels like a modern game mixed with a high-end textbook. No boring 'educational software' vibes.",
+    "principles": [
+      "Fusion: Bauhaus Structure + Gaming UI",
+      "Emotion: Calm Confidence (Blue/Green) vs. High Energy Reward (Gold/Yellow)",
+      "Content: Math is beautiful. Use whitespace to let equations breathe.",
+      "Zoom: Focus on the current problem. Remove distractions during exercises."
+    ]
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope, sans-serif",
+      "weights": ["600", "800"],
+      "usage": "Use for all section titles, hero text, and grade levels. Tight tracking (-0.02em)."
+    },
+    "body": {
+      "family": "Public Sans, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Use for problem text, explanations, and UI labels. High legibility."
+    },
+    "math": {
+      "family": "KaTeX_Main, 'Times New Roman', serif",
+      "usage": "Strictly for equations and numbers within problems."
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Academic Navy",
+        "hex": "#0F172A",
+        "tailwind": "bg-slate-900 text-slate-50"
+      },
+      "secondary": {
+        "name": "Growth Green",
+        "hex": "#10B981",
+        "tailwind": "bg-emerald-500"
+      },
+      "accent": {
+        "name": "Focus Blue",
+        "hex": "#38BDF8",
+        "tailwind": "text-sky-400"
+      },
+      "background": {
+        "light": "#F8FAFC",
+        "dark": "#020617"
+      },
+      "feedback": {
+        "success": "#059669",
+        "error": "#DC2626",
+        "warning": "#D97706"
+      }
+    },
+    "theme_strategy": "Light Mode default for 'Paper/School' feel. Dark Mode optional for 'Night Study'. Use high contrast in both."
+  },
+  "layout": {
+    "grid_system": "The Bento Grid (Tetris Mode)",
+    "spacing": "Generous. Use p-8 or p-12 for main containers. Gap-6 for grids.",
+    "container_styles": {
+      "card": "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl",
+      "dashboard_grid": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "hero_block": "col-span-full md:col-span-8 row-span-2",
+      "stat_block": "col-span-6 md:col-span-4",
+      "list_block": "col-span-full md:col-span-4 row-span-2"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 py-3 font-bold shadow-lg hover:shadow-xl transition-transform active:scale-95",
+      "secondary": "bg-white text-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-full px-8 py-3 font-bold transition-colors",
+      "ghost": "text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg px-4 py-2"
+    },
+    "inputs": {
+      "style": "bg-slate-50 border-slate-200 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 rounded-lg h-12 px-4"
+    },
+    "cards": {
+      "topic_card": "relative overflow-hidden group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1",
+      "exercise_card": "max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-8 border-t-4 border-emerald-500"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_student": "https://images.unsplash.com/photo-1719498828499-48b0086e5c21?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHxoYXBweSUyMHN0dWRlbnRzJTIwc3R1ZHlpbmclMjBtYXRoJTIwbGlicmFyeXxlbnwwfHx8fDE3NjY5MTQyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "teacher_admin": "https://images.unsplash.com/photo-1622016579436-14c1844c99ec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHw0fHxoYXBweSUyMHN0dWRlbnRzJTIwc3R1ZHlpbmclMjBtYXRoJTIwbGlicmFyeXxlbnwwfHx8fDE3NjY5MTQyMzV8MA&ixlib=rb-4.1.0&q=85",
+      "topic_geometry": "https://images.unsplash.com/photo-1754795192466-abe08a4d7c03?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGdlb21ldHJpYyUyMHNoYXBlcyUyMDNkJTIwcmVuZGVyJTIwYmx1ZSUyMGdyZWVufGVufDB8fHx8MTc2NjkxNDIzN3ww&ixlib=rb-4.1.0&q=85",
+      "topic_algebra": "https://images.unsplash.com/photo-1758637612244-08a79efb7cb7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGdlb21ldHJpYyUyMHNoYXBlcyUyMDNkJTIwcmVuZGVyJTIwYmx1ZSUyMGdyZWVufGVufDB8fHx8MTc2NjkxNDIzN3ww&ixlib=rb-4.1.0&q=85",
+      "topic_functions": "https://images.pexels.com/photos/17483848/pexels-photo-17483848.png"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "instructions": "Use Lucide icons for UI. For Badges/XP, use Lucide icons (Trophy, Medal, Star, Zap) but style them with 'text-yellow-500 drop-shadow-lg' and scale them up (w-12 h-12)."
+    }
+  },
+  "motion": {
+    "page_transition": "initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}",
+    "hover_effects": "whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}",
+    "success_animation": "Use 'canvas-confetti' for correct answers."
+  },
+  "accessibility": {
+    "contrast": "Ensure text is Slate-900 on Slate-50 backgrounds. Avoid light gray text.",
+    "focus": "Visible ring-2 ring-offset-2 ring-emerald-500 on all interactive elements.",
+    "testing": "All interactive elements must have data-testid attributes."
+  },
+  "instructions_to_main_agent": [
+    "1. Install 'lucide-react', 'framer-motion', 'clsx', 'tailwind-merge', 'canvas-confetti'.",
+    "2. Update tailwind.config.js to include the new colors (emerald, slate, sky).",
+    "3. Create a 'Layout' component that handles the Sidebar (Admin) or Navbar (Student).",
+    "4. Use the 'Bento Grid' for the Student Dashboard.",
+    "5. Ensure the 'Exercise' view is distraction-free (hide sidebar/heavy nav).",
+    "6. Use the provided image URLs for the Landing Page and Topic Cards.",
+    "7. STRICTLY follow the German language requirement for all UI text."
+  ],
+  "universal_guidelines": [
+    "Do not use gradients for text.",
+    "Do not center-align long text blocks.",
+    "Use 2x more padding than you think is necessary.",
+    "Always add hover states to interactive elements.",
+    "Use 'sonner' for toast notifications."
+  ]
+}
