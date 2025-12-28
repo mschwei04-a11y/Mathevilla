@@ -101,7 +101,13 @@ export default function Login() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-sm">
+            <div className="mt-4 text-center">
+              <Link to="/password-reset" className="text-blue-600 hover:text-blue-700 text-sm font-medium" data-testid="forgot-password-link">
+                Passwort vergessen?
+              </Link>
+            </div>
+
+            <div className="mt-4 text-center text-sm">
               <span className="text-blue-600">Noch kein Konto? </span>
               <Link to="/register" className="text-blue-700 hover:text-blue-800 font-semibold" data-testid="register-link">
                 Jetzt registrieren
