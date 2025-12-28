@@ -246,15 +246,18 @@ frontend:
 
   - task: "Student Dashboard"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/pages/StudentDashboard.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Shows XP, level, progress, and recommendations"
+        - working: false
+          agent: "testing"
+          comment: "❌ REGISTRATION ISSUE: Student registration form has dropdown interaction problems. Cannot complete student registration due to Select component overlay issues preventing grade selection. The form loads correctly but dropdown selections for role and grade fail with 'Element is not visible' errors despite being visually present. This blocks testing of student dashboard functionality."
 
   - task: "Exercise Page"
     implemented: true
