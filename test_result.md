@@ -285,7 +285,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Password Reset Flow"
     - "Password Reset Page"
     - "Student Dashboard"
     - "Exercise Page"
