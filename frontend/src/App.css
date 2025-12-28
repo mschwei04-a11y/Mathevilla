@@ -1,34 +1,84 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* MatheVilla App Styles */
+
+.grade-selector-card {
+  @apply p-6 cursor-pointer transition-all duration-300 hover:scale-105;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.grade-selector-card:hover {
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.topic-gradient {
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.8) 100%);
 }
 
-.App-link {
-    color: #61dafb;
+.xp-bar {
+  @apply h-3 rounded-full overflow-hidden bg-slate-200;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.xp-bar-fill {
+  @apply h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500;
+}
+
+.level-badge {
+  @apply inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-white;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+}
+
+.difficulty-leicht {
+  @apply text-emerald-600 bg-emerald-50 border-emerald-200;
+}
+
+.difficulty-mittel {
+  @apply text-amber-600 bg-amber-50 border-amber-200;
+}
+
+.difficulty-schwer {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+.answer-correct {
+  @apply bg-emerald-50 border-2 border-emerald-500 text-emerald-800;
+}
+
+.answer-wrong {
+  @apply bg-red-50 border-2 border-red-500 text-red-800;
+}
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors;
+}
+
+.sidebar-link.active {
+  @apply bg-slate-900 text-white hover:bg-slate-800;
+}
+
+.nav-link {
+  @apply px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors font-medium;
+}
+
+.nav-link.active {
+  @apply text-emerald-600 bg-emerald-50;
+}
+
+/* Option buttons for multiple choice */
+.option-btn {
+  @apply w-full text-left px-6 py-4 rounded-xl border-2 border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 font-medium;
+}
+
+.option-btn:hover {
+  transform: translateX(4px);
+}
+
+.option-btn.selected {
+  @apply border-emerald-500 bg-emerald-50 text-emerald-800;
+}
+
+.option-btn.correct {
+  @apply border-emerald-500 bg-emerald-100 text-emerald-800;
+}
+
+.option-btn.wrong {
+  @apply border-red-500 bg-red-100 text-red-800;
 }
