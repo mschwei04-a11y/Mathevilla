@@ -174,9 +174,12 @@ export default function Exercise() {
             <h1 className="font-bold text-slate-900" style={{ fontFamily: 'Manrope' }} data-testid="topic-title">
               {decodedTopic}
             </h1>
-            <span className="text-sm text-slate-500">
-              {currentIndex + 1}/{tasks.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <SoundControls />
+              <span className="text-sm text-slate-500">
+                {currentIndex + 1}/{tasks.length}
+              </span>
+            </div>
           </div>
           <Progress value={progressPercent} className="h-2" />
         </div>
