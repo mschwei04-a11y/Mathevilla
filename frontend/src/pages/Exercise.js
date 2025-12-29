@@ -70,6 +70,7 @@ export default function Exercise() {
 
       if (response.data.is_correct) {
         setCorrectTasks(prev => prev + 1);
+        playSound('success');
         confetti({
           particleCount: 100,
           spread: 70,
@@ -77,18 +78,22 @@ export default function Exercise() {
         });
         
         if (response.data.level_up) {
+          setTimeout(() => playSound('levelUp'), 500);
           toast.success(`Level Up! Du bist jetzt Level ${user.level + 1}!`, {
             icon: <Trophy className="w-5 h-5 text-yellow-500" />
           });
         }
         
         if (response.data.new_badges?.length > 0) {
+          setTimeout(() => playSound('badge'), response.data.level_up ? 1500 : 500);
           response.data.new_badges.forEach(badge => {
             toast.success(`Neues Badge: ${badge}!`, {
               icon: <Star className="w-5 h-5 text-yellow-500" />
             });
           });
         }
+      } else {
+        playSound('error');
       }
       
       refreshUser();
