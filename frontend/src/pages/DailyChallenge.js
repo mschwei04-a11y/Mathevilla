@@ -186,9 +186,12 @@ export default function DailyChallenge() {
               <Flame className="w-6 h-6" />
               <h1 className="font-bold" style={{ fontFamily: 'Manrope' }}>Tägliche Challenge</h1>
             </div>
-            <span className="text-white text-sm">
-              {currentIndex + 1}/{challenge.tasks.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <SoundControls />
+              <span className="text-white text-sm">
+                {currentIndex + 1}/{challenge.tasks.length}
+              </span>
+            </div>
           </div>
           <Progress value={progressPercent} className="h-2 bg-white/20" />
         </div>
