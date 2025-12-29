@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSound } from '../context/SoundContext';
 import { api } from '../lib/api';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
@@ -9,6 +10,7 @@ import { Input } from '../components/ui/input';
 import { Progress } from '../components/ui/progress';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+import SoundControls from '../components/SoundControls';
 import { 
   ArrowLeft, Flame, CheckCircle, XCircle, 
   Star, Trophy, Zap, Gift
@@ -16,6 +18,7 @@ import {
 
 export default function DailyChallenge() {
   const { user, refreshUser } = useAuth();
+  const { playSound } = useSound();
   const navigate = useNavigate();
   
   const [challenge, setChallenge] = useState(null);
@@ -62,14 +65,18 @@ export default function DailyChallenge() {
       setCompletedTaskIds(prev => [...prev, currentTask.id]);
 
       if (response.data.is_correct) {
+        playSound('success');
         confetti({
           particleCount: 50,
           spread: 60,
           origin: { y: 0.6 }
         });
+      } else {
+        playSound('error');
       }
 
       if (response.data.challenge_completed && response.data.bonus_xp_awarded) {
+        setTimeout(() => playSound('levelUp'), 500);
         confetti({
           particleCount: 200,
           spread: 100,
