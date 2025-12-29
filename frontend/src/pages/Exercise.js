@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSound } from '../context/SoundContext';
 import { api } from '../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/button';
@@ -9,6 +10,7 @@ import { Input } from '../components/ui/input';
 import { Progress } from '../components/ui/progress';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+import SoundControls from '../components/SoundControls';
 import { 
   ArrowLeft, ArrowRight, CheckCircle, XCircle, 
   Lightbulb, Star, Trophy, Zap
@@ -17,6 +19,7 @@ import {
 export default function Exercise() {
   const { grade, topic } = useParams();
   const { user, refreshUser } = useAuth();
+  const { playSound } = useSound();
   const navigate = useNavigate();
   
   const [tasks, setTasks] = useState([]);
