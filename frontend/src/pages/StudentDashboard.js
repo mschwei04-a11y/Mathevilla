@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSound } from '../context/SoundContext';
 import { api } from '../lib/api';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { toast } from 'sonner';
+import SoundControls from '../components/SoundControls';
 import { 
   Trophy, Star, Zap, Target, BookOpen, TrendingUp, 
   LogOut, Calendar, Sparkles, ChevronRight, Award, Flame
@@ -14,6 +16,7 @@ import {
 
 export default function StudentDashboard() {
   const { user, logout, refreshUser } = useAuth();
+  const { playSound } = useSound();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [progress, setProgress] = useState([]);
@@ -79,6 +82,7 @@ export default function StudentDashboard() {
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-4">
+              <SoundControls />
               <Link to="/daily-challenge" className="nav-link flex items-center gap-2" data-testid="daily-challenge-nav">
                 <Flame className="w-5 h-5 text-orange-500" />
                 <span className="hidden sm:inline">Challenge</span>
