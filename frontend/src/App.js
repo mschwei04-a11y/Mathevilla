@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SoundProvider } from './context/SoundContext';
 import { Toaster } from './components/ui/sonner';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -85,8 +86,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster position="top-center" richColors />
+        <SoundProvider>
+          <AppRoutes />
+          <Toaster position="top-center" richColors />
+        </SoundProvider>
       </AuthProvider>
     </BrowserRouter>
   );
