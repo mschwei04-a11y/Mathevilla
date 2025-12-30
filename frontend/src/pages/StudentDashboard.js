@@ -63,8 +63,8 @@ export default function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
@@ -101,16 +101,16 @@ export default function StudentDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900" style={{ fontFamily: 'Nunito' }} data-testid="welcome-heading">
+          <h1 className="text-2xl sm:text-3xl font-bold text-emerald-900" style={{ fontFamily: 'Nunito' }} data-testid="welcome-heading">
             Hallo, {user?.name}!
           </h1>
-          <p className="text-blue-600 mt-1">Klasse {user?.grade} • Bereit zum Lernen?</p>
+          <p className="text-emerald-600 mt-1">Klasse {user?.grade} • Bereit zum Lernen?</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="bg-blue-600 text-white border-0 shadow-lg shadow-blue-600/20" data-testid="xp-card">
+            <Card className="bg-emerald-600 text-white border-0 shadow-lg shadow-emerald-600/20" data-testid="xp-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -118,7 +118,7 @@ export default function StudentDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{user?.xp || 0}</p>
-                    <p className="text-blue-100 text-sm">XP gesamt</p>
+                    <p className="text-emerald-100 text-sm">XP gesamt</p>
                   </div>
                 </div>
               </CardContent>
@@ -126,15 +126,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="level-card">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="level-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">Level {user?.level || 1}</p>
-                    <p className="text-blue-500 text-sm">Dein Level</p>
+                    <p className="text-2xl font-bold text-emerald-900">Level {user?.level || 1}</p>
+                    <p className="text-emerald-500 text-sm">Dein Level</p>
                   </div>
                 </div>
               </CardContent>
@@ -142,15 +142,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="tasks-card">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="tasks-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <Target className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">{stats?.total_tasks_completed || 0}</p>
-                    <p className="text-blue-500 text-sm">Aufgaben gelöst</p>
+                    <p className="text-2xl font-bold text-emerald-900">{stats?.total_tasks_completed || 0}</p>
+                    <p className="text-emerald-500 text-sm">Aufgaben gelöst</p>
                   </div>
                 </div>
               </CardContent>
@@ -158,15 +158,15 @@ export default function StudentDashboard() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="success-card">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="success-card">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">{stats?.success_rate || 0}%</p>
-                    <p className="text-blue-500 text-sm">Erfolgsquote</p>
+                    <p className="text-2xl font-bold text-emerald-900">{stats?.success_rate || 0}%</p>
+                    <p className="text-emerald-500 text-sm">Erfolgsquote</p>
                   </div>
                 </div>
               </CardContent>
@@ -175,11 +175,11 @@ export default function StudentDashboard() {
         </div>
 
         {/* Level Progress */}
-        <Card className="mb-8 bg-white border-blue-100 shadow-md" data-testid="level-progress-card">
+        <Card className="mb-8 bg-white border-emerald-100 shadow-md" data-testid="level-progress-card">
           <CardContent className="p-6">
             <div className="flex justify-between items-center mb-3">
-              <span className="font-semibold text-blue-900">Fortschritt zu Level {(user?.level || 1) + 1}</span>
-              <span className="text-sm text-blue-500">{user?.xp % 100}/100 XP</span>
+              <span className="font-semibold text-emerald-900">Fortschritt zu Level {(user?.level || 1) + 1}</span>
+              <span className="text-sm text-emerald-500">{user?.xp % 100}/100 XP</span>
             </div>
             <Progress value={xpProgress} className="h-3" />
           </CardContent>
@@ -189,10 +189,10 @@ export default function StudentDashboard() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Topics/Start Learning */}
           <div className="lg:col-span-2">
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="topics-card">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="topics-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-900" style={{ fontFamily: 'Nunito' }}>
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 text-emerald-900" style={{ fontFamily: 'Nunito' }}>
+                  <BookOpen className="w-5 h-5 text-emerald-600" />
                   Themen für Klasse {user?.grade}
                 </CardTitle>
               </CardHeader>
@@ -207,18 +207,18 @@ export default function StudentDashboard() {
                     >
                       <Link 
                         to={`/exercise/${user?.grade}/${encodeURIComponent(topic.topic)}`}
-                        className="block p-4 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all hover:translate-x-1 border border-blue-100"
+                        className="block p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-all hover:translate-x-1 border border-emerald-100"
                         data-testid={`topic-${topic.topic}`}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-blue-900">{topic.topic}</h3>
-                          <ChevronRight className="w-5 h-5 text-blue-400" />
+                          <h3 className="font-semibold text-emerald-900">{topic.topic}</h3>
+                          <ChevronRight className="w-5 h-5 text-emerald-400" />
                         </div>
                         <div className="flex items-center gap-2">
                           <Progress value={topic.percentage} className="h-2 flex-1" />
-                          <span className="text-xs text-blue-600 w-10">{Math.round(topic.percentage)}%</span>
+                          <span className="text-xs text-emerald-600 w-10">{Math.round(topic.percentage)}%</span>
                         </div>
-                        <p className="text-xs text-blue-500 mt-2">
+                        <p className="text-xs text-emerald-500 mt-2">
                           {topic.completed_tasks}/{topic.total_tasks} Aufgaben
                         </p>
                       </Link>
@@ -226,7 +226,7 @@ export default function StudentDashboard() {
                   ))}
                 </div>
                 <Link to={`/topics/${user?.grade}`}>
-                  <Button variant="outline" className="w-full mt-4 border-blue-200 text-blue-700 hover:bg-blue-50" data-testid="all-topics-btn">
+                  <Button variant="outline" className="w-full mt-4 border-emerald-200 text-emerald-700 hover:bg-emerald-50" data-testid="all-topics-btn">
                     Alle Themen anzeigen
                   </Button>
                 </Link>
@@ -256,21 +256,21 @@ export default function StudentDashboard() {
 
             {/* AI Recommendation */}
             {aiRecommendation && (
-              <Card className="bg-white border-blue-100 shadow-md" data-testid="ai-recommendation-card">
+              <Card className="bg-white border-emerald-100 shadow-md" data-testid="ai-recommendation-card">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-5 h-5 text-blue-600" />
-                    <h3 className="font-semibold text-blue-900">KI-Empfehlung</h3>
+                    <Sparkles className="w-5 h-5 text-emerald-600" />
+                    <h3 className="font-semibold text-emerald-900">KI-Empfehlung</h3>
                   </div>
-                  <p className="text-blue-700 text-sm">{aiRecommendation}</p>
+                  <p className="text-emerald-700 text-sm">{aiRecommendation}</p>
                 </CardContent>
               </Card>
             )}
 
             {/* Badges */}
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="badges-card">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="badges-card">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2 text-blue-900" style={{ fontFamily: 'Nunito' }}>
+                <CardTitle className="text-base flex items-center gap-2 text-emerald-900" style={{ fontFamily: 'Nunito' }}>
                   <Award className="w-5 h-5 text-yellow-500" />
                   Deine Badges
                 </CardTitle>
@@ -285,16 +285,16 @@ export default function StudentDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-blue-500 text-sm">Löse mehr Aufgaben, um Badges zu verdienen!</p>
+                  <p className="text-emerald-500 text-sm">Löse mehr Aufgaben, um Badges zu verdienen!</p>
                 )}
               </CardContent>
             </Card>
 
             {/* Recommendations */}
             {recommendations.length > 0 && (
-              <Card className="bg-white border-blue-100 shadow-md" data-testid="recommendations-card">
+              <Card className="bg-white border-emerald-100 shadow-md" data-testid="recommendations-card">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-blue-900" style={{ fontFamily: 'Nunito' }}>
+                  <CardTitle className="text-base text-emerald-900" style={{ fontFamily: 'Nunito' }}>
                     Empfohlene Themen
                   </CardTitle>
                 </CardHeader>
@@ -304,10 +304,10 @@ export default function StudentDashboard() {
                       <Link
                         key={rec.topic}
                         to={`/exercise/${user?.grade}/${encodeURIComponent(rec.topic)}`}
-                        className="block p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-100"
+                        className="block p-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-100"
                       >
-                        <p className="font-medium text-blue-900 text-sm">{rec.topic}</p>
-                        <p className="text-xs text-blue-500 mt-1">{rec.reason}</p>
+                        <p className="font-medium text-emerald-900 text-sm">{rec.topic}</p>
+                        <p className="text-xs text-emerald-500 mt-1">{rec.reason}</p>
                       </Link>
                     ))}
                   </div>
