@@ -2,153 +2,171 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 
 const SoundContext = createContext(null);
 
-// Web Audio API based sound generator for child-friendly sounds
-class SoundGenerator {
+// Kahoot-style sound generator - short, positive, motivational sounds
+class KahootSoundGenerator {
   constructor() {
     this.audioContext = null;
-    this.backgroundMusicGain = null;
-    this.backgroundOscillators = [];
-    this.isPlayingMusic = false;
   }
 
   getContext() {
-    if (!this.audioContext) {
+    if (!this.audioContext || this.audioContext.state === 'closed') {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
     }
     return this.audioContext;
   }
 
-  // Success sound - cheerful ascending notes
+  // Kahoot-style correct answer sound - quick upbeat "ding-ding!"
   playSuccess() {
     const ctx = this.getContext();
     const now = ctx.currentTime;
     
-    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 - Major chord arpeggio
+    // Quick double-ding like Kahoot
+    const notes = [
+      { freq: 880, time: 0, duration: 0.08 },      // A5
+      { freq: 1108.73, time: 0.1, duration: 0.15 } // C#6 (higher, brighter)
+    ];
     
-    frequencies.forEach((freq, i) => {
+    notes.forEach(note => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.setValueAtTime(note.freq, now + note.time);
       
-      gain.gain.setValueAtTime(0, now + i * 0.1);
-      gain.gain.linearRampToValueAtTime(0.3, now + i * 0.1 + 0.05);
-      gain.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.3);
+      gain.gain.setValueAtTime(0, now + note.time);
+      gain.gain.linearRampToValueAtTime(0.4, now + note.time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.duration);
       
       osc.connect(gain);
       gain.connect(ctx.destination);
       
-      osc.start(now + i * 0.1);
-      osc.stop(now + i * 0.1 + 0.4);
+      osc.start(now + note.time);
+      osc.stop(now + note.time + note.duration + 0.05);
     });
   }
 
-  // Error sound - gentle two-note hint
+  // Kahoot-style wrong answer - quick "boop" (not harsh)
   playError() {
     const ctx = this.getContext();
     const now = ctx.currentTime;
     
-    const frequencies = [392, 329.63]; // G4, E4 - gentle descending
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     
-    frequencies.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-      
-      gain.gain.setValueAtTime(0, now + i * 0.15);
-      gain.gain.linearRampToValueAtTime(0.2, now + i * 0.15 + 0.05);
-      gain.gain.linearRampToValueAtTime(0, now + i * 0.15 + 0.25);
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.start(now + i * 0.15);
-      osc.stop(now + i * 0.15 + 0.3);
-    });
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.linearRampToValueAtTime(200, now + 0.15);
+    
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(now);
+    osc.stop(now + 0.2);
   }
 
-  // Level up sound - triumphant fanfare
+  // Kahoot-style level up - quick celebratory jingle
   playLevelUp() {
     const ctx = this.getContext();
     const now = ctx.currentTime;
     
-    // Fanfare sequence: C5, E5, G5, C6
-    const frequencies = [523.25, 659.25, 783.99, 1046.50];
+    // Quick ascending celebration
+    const notes = [
+      { freq: 523.25, time: 0, duration: 0.08 },    // C5
+      { freq: 659.25, time: 0.08, duration: 0.08 }, // E5
+      { freq: 783.99, time: 0.16, duration: 0.08 }, // G5
+      { freq: 1046.50, time: 0.24, duration: 0.2 }  // C6 (held longer)
+    ];
     
-    frequencies.forEach((freq, i) => {
+    notes.forEach(note => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now);
+      osc.type = 'triangle'; // Softer than sine
+      osc.frequency.setValueAtTime(note.freq, now + note.time);
       
-      const startTime = now + i * 0.12;
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.35, startTime + 0.03);
-      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.15);
-      gain.gain.linearRampToValueAtTime(0, startTime + 0.5);
+      gain.gain.setValueAtTime(0, now + note.time);
+      gain.gain.linearRampToValueAtTime(0.35, now + note.time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.duration);
       
       osc.connect(gain);
       gain.connect(ctx.destination);
       
-      osc.start(startTime);
-      osc.stop(startTime + 0.6);
+      osc.start(now + note.time);
+      osc.stop(now + note.time + note.duration + 0.05);
     });
-
-    // Add a final sustained chord
-    setTimeout(() => {
-      const chordFreqs = [523.25, 659.25, 783.99];
-      chordFreqs.forEach(freq => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.9);
-      });
-    }, 500);
   }
 
-  // Badge earned sound - magical sparkle
+  // Kahoot-style badge earned - sparkle sound
   playBadge() {
     const ctx = this.getContext();
     const now = ctx.currentTime;
     
-    // Sparkle effect with high frequencies
-    const sparkleFreqs = [1318.51, 1567.98, 2093.00, 1760.00, 2349.32];
+    // Quick sparkle effect
+    const sparkles = [
+      { freq: 1318.51, time: 0 },    // E6
+      { freq: 1567.98, time: 0.05 }, // G6
+      { freq: 1760.00, time: 0.1 },  // A6
+      { freq: 2093.00, time: 0.15 }  // C7
+    ];
     
-    sparkleFreqs.forEach((freq, i) => {
+    sparkles.forEach((note, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.setValueAtTime(note.freq, now + note.time);
       
-      const startTime = now + i * 0.08;
-      gain.gain.setValueAtTime(0, startTime);
-      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
-      gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
+      gain.gain.setValueAtTime(0, now + note.time);
+      gain.gain.linearRampToValueAtTime(0.2, now + note.time + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.1);
       
       osc.connect(gain);
       gain.connect(ctx.destination);
       
-      osc.start(startTime);
-      osc.stop(startTime + 0.25);
+      osc.start(now + note.time);
+      osc.stop(now + note.time + 0.15);
     });
   }
 
-  // Click sound - subtle feedback
+  // Kahoot-style daily challenge complete - victory fanfare
+  playChallengeComplete() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    // Quick victory sequence
+    const melody = [
+      { freq: 659.25, time: 0, duration: 0.1 },     // E5
+      { freq: 783.99, time: 0.1, duration: 0.1 },   // G5
+      { freq: 987.77, time: 0.2, duration: 0.1 },   // B5
+      { freq: 1046.50, time: 0.3, duration: 0.25 }  // C6
+    ];
+    
+    melody.forEach(note => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(note.freq, now + note.time);
+      
+      gain.gain.setValueAtTime(0, now + note.time);
+      gain.gain.linearRampToValueAtTime(0.3, now + note.time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.duration);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(now + note.time);
+      osc.stop(now + note.time + note.duration + 0.05);
+    });
+  }
+
+  // Simple click feedback
   playClick() {
     const ctx = this.getContext();
     const now = ctx.currentTime;
@@ -157,173 +175,63 @@ class SoundGenerator {
     const gain = ctx.createGain();
     
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.setValueAtTime(600, now);
     
-    gain.gain.setValueAtTime(0.1, now);
-    gain.gain.linearRampToValueAtTime(0, now + 0.05);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
     
     osc.connect(gain);
     gain.connect(ctx.destination);
     
     osc.start(now);
-    osc.stop(now + 0.06);
-  }
-
-  // Background music - gentle, looping melody
-  startBackgroundMusic() {
-    if (this.isPlayingMusic) return;
-    
-    const ctx = this.getContext();
-    this.backgroundMusicGain = ctx.createGain();
-    this.backgroundMusicGain.gain.setValueAtTime(0.08, ctx.currentTime);
-    this.backgroundMusicGain.connect(ctx.destination);
-    
-    this.isPlayingMusic = true;
-    this.playMelodyLoop();
-  }
-
-  playMelodyLoop() {
-    if (!this.isPlayingMusic) return;
-    
-    const ctx = this.getContext();
-    const now = ctx.currentTime;
-    
-    // Simple, calming pentatonic melody
-    const melody = [
-      { freq: 392.00, duration: 0.5 },   // G4
-      { freq: 440.00, duration: 0.5 },   // A4
-      { freq: 523.25, duration: 0.75 },  // C5
-      { freq: 440.00, duration: 0.5 },   // A4
-      { freq: 392.00, duration: 0.75 },  // G4
-      { freq: 329.63, duration: 0.5 },   // E4
-      { freq: 392.00, duration: 1.0 },   // G4
-      { freq: 0, duration: 0.5 },        // Rest
-    ];
-    
-    let time = now;
-    melody.forEach(note => {
-      if (note.freq > 0 && this.backgroundMusicGain) {
-        const osc = ctx.createOscillator();
-        const noteGain = ctx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(note.freq, time);
-        
-        noteGain.gain.setValueAtTime(0, time);
-        noteGain.gain.linearRampToValueAtTime(1, time + 0.05);
-        noteGain.gain.linearRampToValueAtTime(0.7, time + note.duration * 0.7);
-        noteGain.gain.linearRampToValueAtTime(0, time + note.duration);
-        
-        osc.connect(noteGain);
-        noteGain.connect(this.backgroundMusicGain);
-        
-        osc.start(time);
-        osc.stop(time + note.duration + 0.1);
-        
-        this.backgroundOscillators.push(osc);
-      }
-      time += note.duration;
-    });
-    
-    // Loop the melody
-    const totalDuration = melody.reduce((sum, note) => sum + note.duration, 0);
-    setTimeout(() => {
-      if (this.isPlayingMusic) {
-        this.playMelodyLoop();
-      }
-    }, totalDuration * 1000);
-  }
-
-  stopBackgroundMusic() {
-    this.isPlayingMusic = false;
-    
-    this.backgroundOscillators.forEach(osc => {
-      try {
-        osc.stop();
-      } catch (e) {
-        // Oscillator may have already stopped
-      }
-    });
-    this.backgroundOscillators = [];
-    
-    if (this.backgroundMusicGain) {
-      this.backgroundMusicGain.disconnect();
-      this.backgroundMusicGain = null;
-    }
+    osc.stop(now + 0.05);
   }
 }
 
 export const SoundProvider = ({ children }) => {
   const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem('mathevilla_sound');
+    const saved = localStorage.getItem('mathnashed_sound');
     return saved !== null ? JSON.parse(saved) : true;
-  });
-  
-  const [musicEnabled, setMusicEnabled] = useState(() => {
-    const saved = localStorage.getItem('mathevilla_music');
-    return saved !== null ? JSON.parse(saved) : false;
   });
 
   const soundGeneratorRef = useRef(null);
 
-  // Initialize sound generator
   useEffect(() => {
-    soundGeneratorRef.current = new SoundGenerator();
-    
-    return () => {
-      if (soundGeneratorRef.current) {
-        soundGeneratorRef.current.stopBackgroundMusic();
-      }
-    };
+    soundGeneratorRef.current = new KahootSoundGenerator();
   }, []);
 
-  // Handle music toggle
   useEffect(() => {
-    if (soundGeneratorRef.current) {
-      if (musicEnabled && soundEnabled) {
-        soundGeneratorRef.current.startBackgroundMusic();
-      } else {
-        soundGeneratorRef.current.stopBackgroundMusic();
-      }
-    }
-  }, [musicEnabled, soundEnabled]);
-
-  // Persist settings
-  useEffect(() => {
-    localStorage.setItem('mathevilla_sound', JSON.stringify(soundEnabled));
+    localStorage.setItem('mathnashed_sound', JSON.stringify(soundEnabled));
   }, [soundEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('mathevilla_music', JSON.stringify(musicEnabled));
-  }, [musicEnabled]);
 
   const playSound = useCallback((type) => {
     if (!soundEnabled || !soundGeneratorRef.current) return;
     
-    // Ensure audio context is resumed (required after user interaction)
-    const ctx = soundGeneratorRef.current.getContext();
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-    
-    switch (type) {
-      case 'success':
-        soundGeneratorRef.current.playSuccess();
-        break;
-      case 'error':
-        soundGeneratorRef.current.playError();
-        break;
-      case 'levelUp':
-        soundGeneratorRef.current.playLevelUp();
-        break;
-      case 'badge':
-        soundGeneratorRef.current.playBadge();
-        break;
-      case 'click':
-        soundGeneratorRef.current.playClick();
-        break;
-      default:
-        break;
+    try {
+      switch (type) {
+        case 'success':
+          soundGeneratorRef.current.playSuccess();
+          break;
+        case 'error':
+          soundGeneratorRef.current.playError();
+          break;
+        case 'levelUp':
+          soundGeneratorRef.current.playLevelUp();
+          break;
+        case 'badge':
+          soundGeneratorRef.current.playBadge();
+          break;
+        case 'challengeComplete':
+          soundGeneratorRef.current.playChallengeComplete();
+          break;
+        case 'click':
+          soundGeneratorRef.current.playClick();
+          break;
+        default:
+          break;
+      }
+    } catch (e) {
+      console.log('Sound playback error:', e);
     }
   }, [soundEnabled]);
 
@@ -331,17 +239,11 @@ export const SoundProvider = ({ children }) => {
     setSoundEnabled(prev => !prev);
   }, []);
 
-  const toggleMusic = useCallback(() => {
-    setMusicEnabled(prev => !prev);
-  }, []);
-
   return (
     <SoundContext.Provider value={{
       soundEnabled,
-      musicEnabled,
       playSound,
-      toggleSound,
-      toggleMusic
+      toggleSound
     }}>
       {children}
     </SoundContext.Provider>
