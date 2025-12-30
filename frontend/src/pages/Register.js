@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, User, GraduationCap } from 'lucide-react';
+import MathIcon from '../components/MathIcon';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -59,7 +60,7 @@ export default function Register() {
         formData.role,
         formData.grade ? parseInt(formData.grade) : null
       );
-      toast.success(`Willkommen bei MatheVilla, ${user.name}!`);
+      toast.success(`Willkommen bei Mathnashed, ${user.name}!`);
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registrierung fehlgeschlagen');
@@ -69,32 +70,30 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white px-4 py-8">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-2xl">∑</span>
-          </div>
-          <span className="font-bold text-2xl text-blue-900" style={{ fontFamily: 'Nunito' }}>MatheVilla</span>
+          <MathIcon className="w-12 h-12" variant="large" />
+          <span className="font-bold text-2xl text-emerald-900" style={{ fontFamily: 'Nunito' }}>Mathnashed</span>
         </Link>
 
-        <Card className="shadow-xl border-blue-100">
+        <Card className="shadow-xl border-emerald-100">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl font-bold text-center text-blue-900" style={{ fontFamily: 'Nunito' }}>Registrieren</CardTitle>
-            <CardDescription className="text-center text-blue-600">Erstelle dein kostenloses Konto</CardDescription>
+            <CardTitle className="text-2xl font-bold text-center text-emerald-900" style={{ fontFamily: 'Nunito' }}>Registrieren</CardTitle>
+            <CardDescription className="text-center text-emerald-600">Erstelle dein kostenloses Konto</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-blue-900">Name</Label>
+                <Label htmlFor="name" className="text-emerald-900">Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                   <Input
                     id="name"
                     placeholder="Dein Name"
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    className="pl-10 h-12 border-blue-200 focus:border-blue-500"
+                    className="pl-10 h-12 border-emerald-200 focus:border-emerald-500"
                     data-testid="register-name-input"
                   />
                 </div>
