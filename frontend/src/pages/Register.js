@@ -100,25 +100,25 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-blue-900">E-Mail</Label>
+                <Label htmlFor="email" className="text-emerald-900">E-Mail</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="deine@email.de"
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
-                    className="pl-10 h-12 border-blue-200 focus:border-blue-500"
+                    className="pl-10 h-12 border-emerald-200 focus:border-emerald-500"
                     data-testid="register-email-input"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role" className="text-blue-900">Ich bin...</Label>
+                <Label htmlFor="role" className="text-emerald-900">Ich bin...</Label>
                 <Select value={formData.role} onValueChange={(value) => handleChange('role', value)}>
-                  <SelectTrigger className="h-12 border-blue-200" data-testid="register-role-select">
+                  <SelectTrigger className="h-12 border-emerald-200" data-testid="register-role-select">
                     <SelectValue placeholder="Rolle wählen" />
                   </SelectTrigger>
                   <SelectContent>
@@ -130,11 +130,11 @@ export default function Register() {
 
               {formData.role === 'student' && (
                 <div className="space-y-2">
-                  <Label htmlFor="grade" className="text-blue-900">Klassenstufe</Label>
+                  <Label htmlFor="grade" className="text-emerald-900">Klassenstufe</Label>
                   <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 z-10" />
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400 z-10" />
                     <Select value={formData.grade} onValueChange={(value) => handleChange('grade', value)}>
-                      <SelectTrigger className="h-12 pl-10 border-blue-200" data-testid="register-grade-select">
+                      <SelectTrigger className="h-12 pl-10 border-emerald-200" data-testid="register-grade-select">
                         <SelectValue placeholder="Klasse wählen" />
                       </SelectTrigger>
                       <SelectContent>
@@ -148,22 +148,22 @@ export default function Register() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-blue-900">Passwort</Label>
+                <Label htmlFor="password" className="text-emerald-900">Passwort</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Mindestens 6 Zeichen"
                     value={formData.password}
                     onChange={(e) => handleChange('password', e.target.value)}
-                    className="pl-10 pr-10 h-12 border-blue-200 focus:border-blue-500"
+                    className="pl-10 pr-10 h-12 border-emerald-200 focus:border-emerald-500"
                     data-testid="register-password-input"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -171,16 +171,16 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-blue-900">Passwort bestätigen</Label>
+                <Label htmlFor="confirmPassword" className="text-emerald-900">Passwort bestätigen</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400" />
                   <Input
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Passwort wiederholen"
                     value={formData.confirmPassword}
                     onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                    className="pl-10 h-12 border-blue-200 focus:border-blue-500"
+                    className="pl-10 h-12 border-emerald-200 focus:border-emerald-500"
                     data-testid="register-confirm-password-input"
                   />
                 </div>
@@ -188,7 +188,7 @@ export default function Register() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 font-semibold text-base"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 font-semibold text-base"
                 disabled={loading}
                 data-testid="register-submit-btn"
               >
@@ -197,8 +197,8 @@ export default function Register() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-blue-600">Schon ein Konto? </span>
-              <Link to="/login" className="text-blue-700 hover:text-blue-800 font-semibold" data-testid="login-link">
+              <span className="text-emerald-600">Schon ein Konto? </span>
+              <Link to="/login" className="text-emerald-700 hover:text-emerald-800 font-semibold" data-testid="login-link">
                 Jetzt anmelden
               </Link>
             </div>
