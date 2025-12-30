@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { toast } from 'sonner';
+import MathIcon from '../components/MathIcon';
 import { 
   Users, BookOpen, Target, TrendingDown, LogOut, 
   ClipboardList, UserCircle, Database, BarChart3
