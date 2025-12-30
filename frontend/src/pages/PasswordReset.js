@@ -115,9 +115,7 @@ export default function PasswordReset() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white px-4">
         <div className="w-full max-w-md">
           <Link to="/" className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-2xl">Σ</span>
-            </div>
+            <MathIcon className="w-12 h-12" variant="large" />
             <span className="font-bold text-2xl text-emerald-900" style={{ fontFamily: 'Nunito' }}>Mathnashed</span>
           </Link>
 
