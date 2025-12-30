@@ -71,9 +71,7 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <div className="fixed left-0 top-0 bottom-0 w-64 bg-emerald-800 text-white p-6 hidden lg:block">
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <span className="font-bold text-lg text-emerald-800">∑</span>
-          </div>
+          <MathIcon className="w-10 h-10" />
           <span className="font-bold text-xl" style={{ fontFamily: 'Nunito' }}>Mathnashed</span>
         </div>
 
@@ -113,9 +111,7 @@ export default function AdminDashboard() {
       <div className="lg:hidden bg-emerald-800 text-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="font-bold text-emerald-800">∑</span>
-            </div>
+            <MathIcon className="w-8 h-8" />
             <span className="font-bold" style={{ fontFamily: 'Nunito' }}>Admin</span>
           </div>
           <div className="flex gap-2">
