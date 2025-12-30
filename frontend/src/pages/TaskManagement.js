@@ -185,7 +185,7 @@ export default function TaskManagement() {
           <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
             <span className="font-bold text-lg">M</span>
           </div>
-          <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>MatheVilla</span>
+          <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>Mathnashed</span>
         </div>
 
         <nav className="space-y-2">
@@ -324,7 +324,7 @@ export default function TaskManagement() {
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             task.task_type === 'multiple_choice' 
-                              ? 'bg-blue-100 text-blue-700' 
+                              ? 'bg-emerald-100 text-emerald-700' 
                               : 'bg-slate-100 text-slate-700'
                           }`}>
                             {task.task_type === 'multiple_choice' ? 'MC' : 'Text'}

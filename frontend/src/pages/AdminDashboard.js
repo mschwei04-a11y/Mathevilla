@@ -55,8 +55,8 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
@@ -67,14 +67,14 @@ export default function AdminDashboard() {
   })) || [];
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-emerald-50">
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 bottom-0 w-64 bg-blue-800 text-white p-6 hidden lg:block">
+      <div className="fixed left-0 top-0 bottom-0 w-64 bg-emerald-800 text-white p-6 hidden lg:block">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <span className="font-bold text-lg text-blue-800">∑</span>
+            <span className="font-bold text-lg text-emerald-800">∑</span>
           </div>
-          <span className="font-bold text-xl" style={{ fontFamily: 'Nunito' }}>MatheVilla</span>
+          <span className="font-bold text-xl" style={{ fontFamily: 'Nunito' }}>Mathnashed</span>
         </div>
 
         <nav className="space-y-2">
@@ -93,14 +93,14 @@ export default function AdminDashboard() {
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
-          <div className="p-4 bg-blue-700 rounded-lg mb-4">
-            <p className="text-sm text-blue-200">Angemeldet als</p>
+          <div className="p-4 bg-emerald-700 rounded-lg mb-4">
+            <p className="text-sm text-emerald-200">Angemeldet als</p>
             <p className="font-semibold truncate">{user?.name}</p>
           </div>
           <Button 
             variant="ghost" 
             onClick={handleLogout} 
-            className="w-full text-blue-200 hover:text-white hover:bg-blue-700"
+            className="w-full text-emerald-200 hover:text-white hover:bg-emerald-700"
             data-testid="logout-btn"
           >
             <LogOut className="w-5 h-5 mr-2" />
@@ -110,26 +110,26 @@ export default function AdminDashboard() {
       </div>
 
       {/* Mobile Header */}
-      <div className="lg:hidden bg-blue-800 text-white p-4">
+      <div className="lg:hidden bg-emerald-800 text-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="font-bold text-blue-800">∑</span>
+              <span className="font-bold text-emerald-800">∑</span>
             </div>
             <span className="font-bold" style={{ fontFamily: 'Nunito' }}>Admin</span>
           </div>
           <div className="flex gap-2">
             <Link to="/admin/tasks">
-              <Button size="sm" variant="ghost" className="text-white hover:bg-blue-700">
+              <Button size="sm" variant="ghost" className="text-white hover:bg-emerald-700">
                 <ClipboardList className="w-5 h-5" />
               </Button>
             </Link>
             <Link to="/admin/students">
-              <Button size="sm" variant="ghost" className="text-white hover:bg-blue-700">
+              <Button size="sm" variant="ghost" className="text-white hover:bg-emerald-700">
                 <Users className="w-5 h-5" />
               </Button>
             </Link>
-            <Button size="sm" variant="ghost" onClick={handleLogout} className="text-white hover:bg-blue-700">
+            <Button size="sm" variant="ghost" onClick={handleLogout} className="text-white hover:bg-emerald-700">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
@@ -141,15 +141,15 @@ export default function AdminDashboard() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-blue-900" style={{ fontFamily: 'Nunito' }} data-testid="admin-heading">
+              <h1 className="text-2xl sm:text-3xl font-bold text-emerald-900" style={{ fontFamily: 'Nunito' }} data-testid="admin-heading">
                 Admin Dashboard
               </h1>
-              <p className="text-blue-600">Willkommen, {user?.name}</p>
+              <p className="text-emerald-600">Willkommen, {user?.name}</p>
             </div>
             <Button 
               onClick={handleSeedDatabase} 
               disabled={seeding}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
               data-testid="seed-btn"
             >
               <Database className="w-4 h-4 mr-2" />
@@ -159,57 +159,57 @@ export default function AdminDashboard() {
 
           {/* Stats Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="students-stat">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="students-stat">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <Users className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-blue-900">{stats?.total_students || 0}</p>
-                    <p className="text-blue-500 text-sm">Schüler</p>
+                    <p className="text-3xl font-bold text-emerald-900">{stats?.total_students || 0}</p>
+                    <p className="text-emerald-500 text-sm">Schüler</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="tasks-stat">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="tasks-stat">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                     <BookOpen className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-blue-900">{stats?.total_tasks || 0}</p>
-                    <p className="text-blue-500 text-sm">Aufgaben</p>
+                    <p className="text-3xl font-bold text-emerald-900">{stats?.total_tasks || 0}</p>
+                    <p className="text-emerald-500 text-sm">Aufgaben</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="answers-stat">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="answers-stat">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
                     <Target className="w-6 h-6 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-blue-900">{stats?.total_answers || 0}</p>
-                    <p className="text-blue-500 text-sm">Antworten</p>
+                    <p className="text-3xl font-bold text-emerald-900">{stats?.total_answers || 0}</p>
+                    <p className="text-emerald-500 text-sm">Antworten</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border-blue-100 shadow-md" data-testid="success-stat">
+            <Card className="bg-white border-emerald-100 shadow-md" data-testid="success-stat">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <TrendingDown className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <TrendingDown className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-blue-900">{stats?.success_rate || 0}%</p>
-                    <p className="text-blue-500 text-sm">Erfolgsquote</p>
+                    <p className="text-3xl font-bold text-emerald-900">{stats?.success_rate || 0}%</p>
+                    <p className="text-emerald-500 text-sm">Erfolgsquote</p>
                   </div>
                 </div>
               </CardContent>
@@ -217,9 +217,9 @@ export default function AdminDashboard() {
           </div>
 
           {/* Difficult Topics Chart */}
-          <Card className="bg-white border-blue-100 shadow-md mb-8" data-testid="difficult-topics-chart">
+          <Card className="bg-white border-emerald-100 shadow-md mb-8" data-testid="difficult-topics-chart">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-900" style={{ fontFamily: 'Nunito' }}>
+              <CardTitle className="flex items-center gap-2 text-emerald-900" style={{ fontFamily: 'Nunito' }}>
                 <TrendingDown className="w-5 h-5 text-red-500" />
                 Schwierige Themen (höchste Fehlerquote)
               </CardTitle>
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-blue-500 text-center py-12">Noch keine Daten verfügbar</p>
+                <p className="text-emerald-500 text-center py-12">Noch keine Daten verfügbar</p>
               )}
             </CardContent>
           </Card>
@@ -246,28 +246,28 @@ export default function AdminDashboard() {
           {/* Quick Links */}
           <div className="grid sm:grid-cols-2 gap-4">
             <Link to="/admin/tasks" data-testid="link-tasks">
-              <Card className="bg-white border-blue-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="bg-white border-emerald-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center">
                     <ClipboardList className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-blue-900">Aufgaben verwalten</h3>
-                    <p className="text-blue-500 text-sm">Erstellen, bearbeiten, löschen</p>
+                    <h3 className="font-bold text-emerald-900">Aufgaben verwalten</h3>
+                    <p className="text-emerald-500 text-sm">Erstellen, bearbeiten, löschen</p>
                   </div>
                 </CardContent>
               </Card>
             </Link>
 
             <Link to="/admin/students" data-testid="link-students">
-              <Card className="bg-white border-blue-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="bg-white border-emerald-100 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center">
                     <UserCircle className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-blue-900">Schülerübersicht</h3>
-                    <p className="text-blue-500 text-sm">Fortschritt und Analysen</p>
+                    <h3 className="font-bold text-emerald-900">Schülerübersicht</h3>
+                    <p className="text-emerald-500 text-sm">Fortschritt und Analysen</p>
                   </div>
                 </CardContent>
               </Card>

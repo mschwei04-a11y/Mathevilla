@@ -77,7 +77,7 @@ export default function StudentOverview() {
             <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
               <span className="font-bold text-lg">M</span>
             </div>
-            <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>MatheVilla</span>
+            <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>Mathnashed</span>
           </div>
 
           <nav className="space-y-2">
@@ -148,8 +148,8 @@ export default function StudentOverview() {
             <div className="grid sm:grid-cols-3 gap-4 mb-6">
               <Card className="border-0 shadow-md">
                 <CardContent className="p-6 flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Target className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                    <Target className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-slate-900">{selectedStudent.tasks_completed || 0}</p>
@@ -292,7 +292,7 @@ export default function StudentOverview() {
           <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
             <span className="font-bold text-lg">M</span>
           </div>
-          <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>MatheVilla</span>
+          <span className="font-bold text-xl" style={{ fontFamily: 'Manrope' }}>Mathnashed</span>
         </div>
 
         <nav className="space-y-2">
