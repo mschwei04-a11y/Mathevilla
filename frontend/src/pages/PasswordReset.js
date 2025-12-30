@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { toast } from 'sonner';
 import { Mail, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import MathIcon from '../components/MathIcon';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
