@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Progress } from '../components/ui/progress';
 import { toast } from 'sonner';
 import SoundControls from '../components/SoundControls';
+import MathIcon from '../components/MathIcon';
 import { 
   Trophy, Star, Zap, Target, BookOpen, TrendingUp, 
   LogOut, Calendar, Sparkles, ChevronRight, Award, Flame
@@ -69,16 +70,14 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-blue-100 sticky top-0 z-50">
+      <nav className="bg-white border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
             <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">∑</span>
-              </div>
-              <span className="font-bold text-lg text-blue-900 hidden sm:block" style={{ fontFamily: 'Nunito' }}>MatheVilla</span>
+              <MathIcon className="w-9 h-9" />
+              <span className="font-bold text-lg text-emerald-900 hidden sm:block" style={{ fontFamily: 'Nunito' }}>Mathnashed</span>
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-4">
@@ -88,10 +87,10 @@ export default function StudentDashboard() {
                 <span className="hidden sm:inline">Challenge</span>
               </Link>
               <Link to="/progress" className="nav-link flex items-center gap-2" data-testid="progress-nav">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <TrendingUp className="w-5 h-5 text-emerald-600" />
                 <span className="hidden sm:inline">Fortschritt</span>
               </Link>
-              <Button variant="ghost" onClick={handleLogout} className="text-blue-600 hover:bg-blue-100" data-testid="logout-btn">
+              <Button variant="ghost" onClick={handleLogout} className="text-emerald-600 hover:bg-emerald-100" data-testid="logout-btn">
                 <LogOut className="w-5 h-5" />
               </Button>
             </div>
