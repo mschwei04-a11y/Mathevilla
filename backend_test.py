@@ -672,8 +672,8 @@ class MatheVillaAPITester:
         return all_protected
 
 def main():
-    print("🚀 Starting MatheVilla API Tests...")
-    print("=" * 50)
+    print("🚀 Starting Mathnashed Platform - Full Feature Test Suite...")
+    print("=" * 60)
     
     tester = MatheVillaAPITester()
     
@@ -682,20 +682,47 @@ def main():
         ("API Health", tester.test_api_health),
         ("Seed Database", tester.test_seed_database),
         
+        # 1. Authentication Tests (as requested)
+        ("Admin Login (admin@mathevilla.de)", tester.test_admin_login),
+        ("Student Login (max2@test.de)", tester.test_student_login),
+        ("Student Registration", tester.test_student_registration),
+        
         # HIGH PRIORITY: Password Reset Flow
         ("Password Reset Request", tester.test_password_reset_request),
         ("Password Reset Confirm", tester.test_password_reset_confirm),
         ("Login with New Password", tester.test_login_with_new_password),
         ("Reset Password Back", tester.test_reset_password_back),
         
-        # Authentication Tests
-        ("Admin Login", tester.test_admin_login),
-        ("Student Registration", tester.test_student_registration),
-        
         # Protected Routes Test
         ("Protected Routes Without Auth", tester.test_protected_routes_without_auth),
         
-        # Task System Tests
+        # 2. New Feature Flags System
+        ("Feature Flags System", tester.test_feature_flags),
+        
+        # 3. Adaptive Recommendations (Hybrid AI)
+        ("Adaptive Recommendations", tester.test_adaptive_recommendations),
+        
+        # 4. Test Readiness Indicator
+        ("Test Readiness Indicator", tester.test_readiness_indicator),
+        
+        # 5. Educational Badges System
+        ("Educational Badges - Available", tester.test_educational_badges_available),
+        ("Educational Badges - Check", tester.test_educational_badges_check),
+        
+        # 6. Weekly Challenge
+        ("Weekly Challenge", tester.test_weekly_challenge),
+        
+        # 7. Practice Mode (No XP)
+        ("Practice Mode", tester.test_practice_mode),
+        
+        # 8. Parent Report
+        ("Parent Report", tester.test_parent_report),
+        
+        # 9. NRW Curriculum Tasks
+        ("NRW Curriculum Tasks Grade 5", tester.test_nrw_curriculum_tasks_grade5),
+        ("NRW Curriculum All Grades", tester.test_nrw_curriculum_all_grades),
+        
+        # Existing Task System Tests
         ("Admin Tasks (~20-25 per grade)", tester.test_admin_tasks),
         ("Grade 5 Grundrechenarten Tasks", tester.test_specific_grade_topic_tasks),
         ("Get Grades", tester.test_get_grades),
