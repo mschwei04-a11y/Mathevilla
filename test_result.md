@@ -306,7 +306,7 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-      message: "Password reset feature is fully implemented (backend + frontend). Added 64 additional tasks to database. Please test: 1) Password reset flow (request token, then reset with token), 2) Student login and exercise flow, 3) Admin dashboard. Test credentials: Admin: admin@mathevilla.de / admin123"
+      message: "MATHNASHED REBRANDING & FEATURES COMPLETE: 1) Branding updated to Mathnashed with school-friendly plus-icon (no Sigma). 2) NRW Hauptschule curriculum tasks added - now 220 total tasks (44,38,37,34,32,35 per grade). 3) All new backend features implemented: Feature Flags, Explain My Mistake (AI), Adaptive Recommendations, Practice Mode, Test Readiness, Educational Badges (10 badges), Weekly Challenge, Parent Report, Class Mode. 4) DSGVO compliant AI - only question/answer/grade sent to AI."
     - agent: "testing"
       message: "✅ COMPREHENSIVE BACKEND TESTING COMPLETED - ALL SYSTEMS WORKING: 1) Password Reset Flow (HIGH PRIORITY) - FULLY FUNCTIONAL: Request token, confirm reset, login with new password all working. 2) Authentication - admin@mathevilla.de/admin123 login working, protected routes properly secured. 3) Task System - 141 total tasks (20-25 per grade as required), /api/admin/tasks and /api/tasks/5/Grundrechenarten working. 4) Admin Dashboard - /api/admin/stats (8 students, 84.2% success rate) and /api/admin/students working. 5) Student Features - task submission, progress tracking, daily challenges all working. 6) XP/Badge/AI systems all functional. All 27 tests passed. Backend is production-ready."
     - agent: "testing"
