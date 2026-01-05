@@ -120,6 +120,7 @@ export default function TopicSelection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {topics.map((topic, index) => {
             const topicProgress = progress[topic] || { percentage: 0, completed_tasks: 0, total_tasks: 0 };
+            const topicReadiness = readiness[topic];
             
             return (
               <motion.div
@@ -128,38 +129,57 @@ export default function TopicSelection() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Link to={`/exercise/${currentGrade}/${encodeURIComponent(topic)}`} data-testid={`topic-card-${topic}`}>
-                  <Card className="topic-card overflow-hidden h-full">
-                    <div className="relative h-40">
-                      <img 
-                        src={getTopicImage(topic)} 
-                        alt={topic}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 topic-gradient"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-white font-bold text-lg" style={{ fontFamily: 'Manrope' }}>{topic}</h3>
+                <Card className="topic-card overflow-hidden h-full">
+                  <div className="relative h-40">
+                    <img 
+                      src={getTopicImage(topic)} 
+                      alt={topic}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 topic-gradient"></div>
+                    {/* Test Readiness Badge */}
+                    {topicReadiness && (
+                      <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                        topicReadiness.status === 'ready' ? 'bg-emerald-500 text-white' :
+                        topicReadiness.status === 'needs_review' ? 'bg-amber-500 text-white' :
+                        'bg-slate-500/70 text-white'
+                      }`}>
+                        {getReadinessIcon(topicReadiness.status)}
+                        {getReadinessText(topicReadiness.status)}
                       </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="text-white font-bold text-lg" style={{ fontFamily: 'Manrope' }}>{topic}</h3>
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-slate-600">
-                          {topicProgress.completed_tasks}/{topicProgress.total_tasks} Aufgaben
-                        </span>
-                        <span className="text-sm font-semibold text-emerald-600">
-                          {Math.round(topicProgress.percentage)}%
-                        </span>
-                      </div>
-                      <Progress value={topicProgress.percentage} className="h-2" />
-                      <div className="mt-4 flex items-center justify-between">
-                        <span className="text-sm text-slate-500">
-                          {topicProgress.correct_answers || 0} richtig beantwortet
-                        </span>
-                        <ChevronRight className="w-5 h-5 text-slate-400" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-slate-600">
+                        {topicProgress.completed_tasks}/{topicProgress.total_tasks} Aufgaben
+                      </span>
+                      <span className="text-sm font-semibold text-emerald-600">
+                        {Math.round(topicProgress.percentage)}%
+                      </span>
+                    </div>
+                    <Progress value={topicProgress.percentage} className="h-2 mb-4" />
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Link to={`/exercise/${currentGrade}/${encodeURIComponent(topic)}`} className="flex-1">
+                        <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="sm">
+                          <BookOpen className="w-4 h-4 mr-1" />
+                          Lernen
+                        </Button>
+                      </Link>
+                      <Link to={`/practice/${currentGrade}/${encodeURIComponent(topic)}`} className="flex-1">
+                        <Button variant="outline" className="w-full border-slate-300" size="sm">
+                          <Brain className="w-4 h-4 mr-1" />
+                          Üben
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             );
           })}
