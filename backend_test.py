@@ -546,9 +546,21 @@ class MatheVillaAPITester:
 
     def test_practice_mode(self):
         """Test Practice Mode (No XP) - POST /api/practice/submit"""
+        # First get a task if we don't have one
         if not hasattr(self, 'task_id') or not self.task_id:
-            print("❌ No task ID available for practice mode test")
-            return False
+            # Get tasks for grade 6 Bruchrechnung
+            success, response = self.run_test(
+                "Get Tasks for Practice Mode",
+                "GET",
+                "tasks/6/Bruchrechnung",
+                200,
+                headers={'Authorization': f'Bearer {self.token}'}
+            )
+            if success and response and len(response) > 0:
+                self.task_id = response[0]['id']
+            else:
+                print("❌ No task ID available for practice mode test")
+                return False
             
         practice_data = {
             "task_id": self.task_id,
