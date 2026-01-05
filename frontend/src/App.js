@@ -9,8 +9,12 @@ import PasswordReset from './pages/PasswordReset';
 import StudentDashboard from './pages/StudentDashboard';
 import TopicSelection from './pages/TopicSelection';
 import Exercise from './pages/Exercise';
+import PracticeMode from './pages/PracticeMode';
 import Progress from './pages/Progress';
 import DailyChallenge from './pages/DailyChallenge';
+import WeeklyChallenge from './pages/WeeklyChallenge';
+import BadgesPage from './pages/BadgesPage';
+import ParentReport from './pages/ParentReport';
 import AdminDashboard from './pages/AdminDashboard';
 import TaskManagement from './pages/TaskManagement';
 import StudentOverview from './pages/StudentOverview';
@@ -68,14 +72,19 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
       <Route path="/topics/:grade" element={<ProtectedRoute><TopicSelection /></ProtectedRoute>} />
       <Route path="/exercise/:grade/:topic" element={<ProtectedRoute><Exercise /></ProtectedRoute>} />
+      <Route path="/practice/:grade/:topic" element={<ProtectedRoute><PracticeMode /></ProtectedRoute>} />
       <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
       <Route path="/daily-challenge" element={<ProtectedRoute><DailyChallenge /></ProtectedRoute>} />
+      <Route path="/weekly-challenge" element={<ProtectedRoute><WeeklyChallenge /></ProtectedRoute>} />
+      <Route path="/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
+      <Route path="/report" element={<ProtectedRoute><ParentReport /></ProtectedRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/tasks" element={<ProtectedRoute adminOnly><TaskManagement /></ProtectedRoute>} />
       <Route path="/admin/students" element={<ProtectedRoute adminOnly><StudentOverview /></ProtectedRoute>} />
       <Route path="/admin/students/:studentId" element={<ProtectedRoute adminOnly><StudentOverview /></ProtectedRoute>} />
+      <Route path="/admin/report/:studentId" element={<ProtectedRoute adminOnly><ParentReport /></ProtectedRoute>} />
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
