@@ -1063,11 +1063,736 @@ def get_seed_tasks():
     
     return tasks
 
+# ================== FEATURE FLAGS ==================
+
+# Default feature flags - can be customized per user/class
+DEFAULT_FEATURES = {
+    "explain_mistake": True,       # AI explanation for wrong answers
+    "adaptive_recommendations": True,  # Adaptive exercise suggestions
+    "practice_mode": True,         # No-pressure practice mode
+    "test_readiness": True,        # Ready for test indicator
+    "educational_badges": True,    # Learning badges
+    "weekly_challenge": True,      # Weekly challenge
+    "parent_report": False,        # Parent progress report (premium)
+    "class_mode": False,           # Teacher assigns exercises (premium)
+}
+
+class FeatureFlagsModel(BaseModel):
+    explain_mistake: bool = True
+    adaptive_recommendations: bool = True
+    practice_mode: bool = True
+    test_readiness: bool = True
+    educational_badges: bool = True
+    weekly_challenge: bool = True
+    parent_report: bool = False
+    class_mode: bool = False
+
+@api_router.get("/features")
+async def get_feature_flags(current_user: dict = Depends(get_current_user)):
+    """Get feature flags for current user"""
+    user_features = current_user.get("features", DEFAULT_FEATURES)
+    return user_features
+
+@api_router.put("/admin/features/{user_id}")
+async def update_user_features(user_id: str, features: FeatureFlagsModel, admin: dict = Depends(get_admin_user)):
+    """Admin: Update feature flags for a user"""
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"features": features.dict()}}
+    )
+    return {"message": "Feature-Flags aktualisiert"}
+
+# ================== EXPLAIN MY MISTAKE (AI) ==================
+
+class ExplainMistakeRequest(BaseModel):
+    task_id: str
+    student_answer: str
+
+class ExplainMistakeResponse(BaseModel):
+    explanation: str
+    similar_example: str
+    tip: str
+
+@api_router.post("/ai/explain-mistake", response_model=ExplainMistakeResponse)
+async def explain_mistake(request: ExplainMistakeRequest, current_user: dict = Depends(get_current_user)):
+    """AI explains why the answer is wrong - DSGVO compliant (no personal data sent)"""
+    task = await db.tasks.find_one({"id": request.task_id}, {"_id": 0})
+    if not task:
+        raise HTTPException(status_code=404, detail="Aufgabe nicht gefunden")
+    
+    grade = current_user.get("grade", 7)
+    
+    # Only send anonymized data to AI: question, student_answer, correct_answer, grade_level
+    prompt = f"""Du bist ein freundlicher Mathe-Lehrer für Hauptschüler (Klasse {grade}).
+Ein Schüler hat folgende Aufgabe falsch beantwortet:
+
+Aufgabe: {task['question']}
+Schüler-Antwort: {request.student_answer}
+Richtige Antwort: {task['correct_answer']}
+
+Erkläre in einfachem Deutsch (max 3 Sätze):
+1. Warum die Antwort falsch ist
+2. Gib eine ähnliche, einfachere Beispielaufgabe mit Lösung
+3. Gib einen kurzen Tipp
+
+Antworte im JSON-Format:
+{{"explanation": "...", "similar_example": "...", "tip": "..."}}"""
+
+    try:
+        chat = LlmChat(
+            api_key=os.environ.get("LLM_KEY"),
+            model="gpt-4o-mini",
+            session_id=f"explain_{current_user['id']}_{request.task_id}"
+        )
+        response = await chat.send_message_async(UserMessage(text=prompt))
+        
+        # Parse JSON response
+        import json
+        result = json.loads(response.text.strip().replace("```json", "").replace("```", ""))
+        return ExplainMistakeResponse(**result)
+    except Exception as e:
+        logger.error(f"AI explanation error: {e}")
+        return ExplainMistakeResponse(
+            explanation=f"Die richtige Antwort ist {task['correct_answer']}. {task['explanation']}",
+            similar_example="Übe diese Art von Aufgabe noch einmal.",
+            tip="Lies die Aufgabe noch einmal genau durch."
+        )
+
+# ================== ADAPTIVE RECOMMENDATIONS ==================
+
+class AdaptiveRecommendation(BaseModel):
+    task_id: str
+    topic: str
+    difficulty: str
+    reason: str
+
+@api_router.get("/recommendations/adaptive", response_model=List[AdaptiveRecommendation])
+async def get_adaptive_recommendations(current_user: dict = Depends(get_current_user)):
+    """Hybrid adaptive recommendations - rules first, AI only when needed"""
+    user_id = current_user["id"]
+    grade = current_user.get("grade", 7)
+    
+    # Get user's answer history
+    answers = await db.answers.find({"user_id": user_id}).sort("created_at", -1).limit(50).to_list(50)
+    
+    # Calculate performance per topic
+    topic_performance = {}
+    for answer in answers:
+        task = await db.tasks.find_one({"id": answer["task_id"]}, {"_id": 0})
+        if task:
+            topic = task["topic"]
+            if topic not in topic_performance:
+                topic_performance[topic] = {"correct": 0, "total": 0}
+            topic_performance[topic]["total"] += 1
+            if answer.get("is_correct"):
+                topic_performance[topic]["correct"] += 1
+    
+    recommendations = []
+    
+    # Rule-based logic (no AI needed for simple cases)
+    for topic, perf in topic_performance.items():
+        if perf["total"] > 0:
+            success_rate = perf["correct"] / perf["total"]
+            
+            if success_rate < 0.5:
+                # Struggling - recommend easier tasks
+                difficulty = "leicht"
+                reason = f"Du brauchst mehr Übung bei '{topic}'"
+            elif success_rate < 0.8:
+                # Medium - recommend similar tasks
+                difficulty = "mittel"
+                reason = f"Weiter üben bei '{topic}'"
+            else:
+                # Mastered - recommend harder tasks
+                difficulty = "schwer"
+                reason = f"Super! Probier schwierigere Aufgaben bei '{topic}'"
+            
+            tasks = await db.tasks.find(
+                {"grade": grade, "topic": topic, "difficulty": difficulty},
+                {"_id": 0}
+            ).limit(3).to_list(3)
+            
+            for task in tasks:
+                if task["id"] not in [a["task_id"] for a in answers[-10:]]:
+                    recommendations.append(AdaptiveRecommendation(
+                        task_id=task["id"],
+                        topic=topic,
+                        difficulty=difficulty,
+                        reason=reason
+                    ))
+    
+    # If no recommendations, get random tasks for weak topics
+    if not recommendations:
+        tasks = await db.tasks.find({"grade": grade, "difficulty": "leicht"}, {"_id": 0}).limit(5).to_list(5)
+        for task in tasks:
+            recommendations.append(AdaptiveRecommendation(
+                task_id=task["id"],
+                topic=task["topic"],
+                difficulty="leicht",
+                reason="Starte mit dieser Aufgabe!"
+            ))
+    
+    return recommendations[:10]
+
+# ================== PRACTICE MODE (No XP) ==================
+
+class PracticeModeAnswer(BaseModel):
+    task_id: str
+    answer: str
+
+@api_router.post("/practice/submit")
+async def submit_practice_answer(data: PracticeModeAnswer, current_user: dict = Depends(get_current_user)):
+    """Submit answer in practice mode - no XP, no pressure"""
+    task = await db.tasks.find_one({"id": data.task_id}, {"_id": 0})
+    if not task:
+        raise HTTPException(status_code=404, detail="Aufgabe nicht gefunden")
+    
+    is_correct = data.answer.strip().lower() == task["correct_answer"].strip().lower()
+    
+    # Record for statistics but no XP
+    await db.practice_answers.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": current_user["id"],
+        "task_id": data.task_id,
+        "submitted_answer": data.answer,
+        "is_correct": is_correct,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {
+        "is_correct": is_correct,
+        "correct_answer": task["correct_answer"],
+        "explanation": task["explanation"],
+        "mode": "practice",
+        "message": "Übungsmodus - Kein Druck, nur Lernen!"
+    }
+
+# ================== TEST READINESS INDICATOR ==================
+
+class TestReadiness(BaseModel):
+    topic: str
+    status: str  # "ready", "needs_review", "not_ready"
+    score: float
+    tasks_completed: int
+    recommendation: str
+
+@api_router.get("/readiness/{topic}", response_model=TestReadiness)
+async def get_test_readiness(topic: str, current_user: dict = Depends(get_current_user)):
+    """Check if student is ready for a test on a topic"""
+    user_id = current_user["id"]
+    grade = current_user.get("grade", 7)
+    
+    # Get all answers for this topic
+    topic_tasks = await db.tasks.find({"grade": grade, "topic": topic}, {"_id": 0, "id": 1}).to_list(100)
+    task_ids = [t["id"] for t in topic_tasks]
+    
+    answers = await db.answers.find({
+        "user_id": user_id,
+        "task_id": {"$in": task_ids}
+    }).to_list(1000)
+    
+    if not answers:
+        return TestReadiness(
+            topic=topic,
+            status="not_ready",
+            score=0.0,
+            tasks_completed=0,
+            recommendation="Beginne mit den Übungen zu diesem Thema."
+        )
+    
+    correct = sum(1 for a in answers if a.get("is_correct", False))
+    total = len(answers)
+    score = (correct / total * 100) if total > 0 else 0
+    
+    if score >= 80 and total >= 10:
+        status = "ready"
+        recommendation = "Du bist bereit für den Test! 🎉"
+    elif score >= 60 or (score >= 50 and total < 10):
+        status = "needs_review"
+        recommendation = "Fast geschafft! Übe noch ein bisschen."
+    else:
+        status = "not_ready"
+        recommendation = "Übe dieses Thema noch mehr."
+    
+    return TestReadiness(
+        topic=topic,
+        status=status,
+        score=round(score, 1),
+        tasks_completed=total,
+        recommendation=recommendation
+    )
+
+# ================== EDUCATIONAL BADGES ==================
+
+EDUCATIONAL_BADGES = {
+    "bruche_starter": {"name": "Brüche-Starter", "icon": "🥧", "requirement": "5 Bruch-Aufgaben richtig"},
+    "bruche_profi": {"name": "Brüche-Profi", "icon": "🏆", "requirement": "20 Bruch-Aufgaben richtig"},
+    "geometrie_starter": {"name": "Geometrie-Starter", "icon": "📐", "requirement": "5 Geometrie-Aufgaben richtig"},
+    "geometrie_profi": {"name": "Geometrie-Profi", "icon": "🌟", "requirement": "20 Geometrie-Aufgaben richtig"},
+    "prozent_meister": {"name": "Prozent-Meister", "icon": "💯", "requirement": "15 Prozent-Aufgaben richtig"},
+    "gleichungs_held": {"name": "Gleichungs-Held", "icon": "⚖️", "requirement": "10 Gleichungs-Aufgaben richtig"},
+    "fleissige_biene": {"name": "Fleißige Biene", "icon": "🐝", "requirement": "50 Aufgaben insgesamt"},
+    "mathe_marathon": {"name": "Mathe-Marathon", "icon": "🏃", "requirement": "100 Aufgaben insgesamt"},
+    "wochen_champion": {"name": "Wochen-Champion", "icon": "🏅", "requirement": "Weekly Challenge geschafft"},
+    "perfektionist": {"name": "Perfektionist", "icon": "✨", "requirement": "10 richtige Antworten in Folge"},
+}
+
+@api_router.get("/badges/available")
+async def get_available_badges():
+    """Get all available educational badges"""
+    return EDUCATIONAL_BADGES
+
+@api_router.get("/badges/check")
+async def check_and_award_badges(current_user: dict = Depends(get_current_user)):
+    """Check and award new badges based on performance"""
+    user_id = current_user["id"]
+    current_badges = current_user.get("badges", [])
+    new_badges = []
+    
+    # Count correct answers per topic
+    pipeline = [
+        {"$match": {"user_id": user_id, "is_correct": True}},
+        {"$lookup": {"from": "tasks", "localField": "task_id", "foreignField": "id", "as": "task"}},
+        {"$unwind": "$task"},
+        {"$group": {"_id": "$task.topic", "count": {"$sum": 1}}}
+    ]
+    topic_counts = await db.answers.aggregate(pipeline).to_list(100)
+    topic_dict = {t["_id"]: t["count"] for t in topic_counts}
+    
+    # Total correct answers
+    total_correct = sum(topic_dict.values())
+    
+    # Check badges
+    badge_checks = [
+        ("bruche_starter", any("Bruch" in t for t in topic_dict) and sum(topic_dict.get(t, 0) for t in topic_dict if "Bruch" in t) >= 5),
+        ("bruche_profi", any("Bruch" in t for t in topic_dict) and sum(topic_dict.get(t, 0) for t in topic_dict if "Bruch" in t) >= 20),
+        ("geometrie_starter", any("Geometrie" in t or "Fläche" in t for t in topic_dict) and sum(topic_dict.get(t, 0) for t in topic_dict if "Geometrie" in t or "Fläche" in t) >= 5),
+        ("geometrie_profi", any("Geometrie" in t or "Fläche" in t for t in topic_dict) and sum(topic_dict.get(t, 0) for t in topic_dict if "Geometrie" in t or "Fläche" in t) >= 20),
+        ("prozent_meister", sum(topic_dict.get(t, 0) for t in topic_dict if "Prozent" in t) >= 15),
+        ("gleichungs_held", sum(topic_dict.get(t, 0) for t in topic_dict if "Gleichung" in t) >= 10),
+        ("fleissige_biene", total_correct >= 50),
+        ("mathe_marathon", total_correct >= 100),
+    ]
+    
+    for badge_id, earned in badge_checks:
+        if earned and badge_id not in current_badges:
+            new_badges.append(badge_id)
+            current_badges.append(badge_id)
+    
+    if new_badges:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"badges": current_badges}}
+        )
+    
+    return {
+        "current_badges": current_badges,
+        "new_badges": new_badges,
+        "badge_details": {b: EDUCATIONAL_BADGES[b] for b in current_badges if b in EDUCATIONAL_BADGES}
+    }
+
+# ================== WEEKLY CHALLENGE ==================
+
+@api_router.get("/challenges/weekly")
+async def get_weekly_challenge(current_user: dict = Depends(get_current_user)):
+    """Get weekly challenge - 5 medium difficulty tasks"""
+    grade = current_user.get("grade", 7)
+    user_id = current_user["id"]
+    
+    # Get current week
+    today = datetime.now(timezone.utc)
+    week_start = today - timedelta(days=today.weekday())
+    week_id = week_start.strftime("%Y-W%W")
+    
+    # Check if challenge exists
+    existing = await db.weekly_challenges.find_one({
+        "user_id": user_id,
+        "week_id": week_id
+    }, {"_id": 0})
+    
+    if existing:
+        # Get task details
+        tasks = []
+        for task_id in existing["task_ids"]:
+            task = await db.tasks.find_one({"id": task_id}, {"_id": 0})
+            if task:
+                tasks.append(task)
+        existing["tasks"] = tasks
+        return existing
+    
+    # Create new weekly challenge
+    medium_tasks = await db.tasks.find(
+        {"grade": grade, "difficulty": "mittel"},
+        {"_id": 0}
+    ).to_list(100)
+    
+    if len(medium_tasks) < 5:
+        medium_tasks.extend(await db.tasks.find({"grade": grade}, {"_id": 0}).limit(10).to_list(10))
+    
+    selected_tasks = random.sample(medium_tasks, min(5, len(medium_tasks)))
+    
+    challenge = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "week_id": week_id,
+        "task_ids": [t["id"] for t in selected_tasks],
+        "completed_task_ids": [],
+        "completed": False,
+        "bonus_xp": 100,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.weekly_challenges.insert_one(challenge)
+    challenge["tasks"] = selected_tasks
+    del challenge["_id"] if "_id" in challenge else None
+    
+    return challenge
+
+@api_router.post("/challenges/weekly/submit")
+async def submit_weekly_challenge_answer(data: AnswerSubmit, current_user: dict = Depends(get_current_user)):
+    """Submit answer for weekly challenge"""
+    user_id = current_user["id"]
+    today = datetime.now(timezone.utc)
+    week_start = today - timedelta(days=today.weekday())
+    week_id = week_start.strftime("%Y-W%W")
+    
+    challenge = await db.weekly_challenges.find_one({
+        "user_id": user_id,
+        "week_id": week_id
+    })
+    
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Keine Weekly Challenge gefunden")
+    
+    if challenge["completed"]:
+        raise HTTPException(status_code=400, detail="Weekly Challenge bereits abgeschlossen")
+    
+    task = await db.tasks.find_one({"id": data.task_id}, {"_id": 0})
+    if not task:
+        raise HTTPException(status_code=404, detail="Aufgabe nicht gefunden")
+    
+    is_correct = data.answer.strip().lower() == task["correct_answer"].strip().lower()
+    
+    if is_correct and data.task_id not in challenge["completed_task_ids"]:
+        challenge["completed_task_ids"].append(data.task_id)
+        
+        # Check if all tasks completed
+        all_completed = len(challenge["completed_task_ids"]) == len(challenge["task_ids"])
+        
+        update = {"completed_task_ids": challenge["completed_task_ids"]}
+        if all_completed:
+            update["completed"] = True
+            # Award bonus XP
+            await db.users.update_one(
+                {"id": user_id},
+                {"$inc": {"xp": challenge["bonus_xp"]}}
+            )
+            # Award badge
+            if "wochen_champion" not in current_user.get("badges", []):
+                await db.users.update_one(
+                    {"id": user_id},
+                    {"$push": {"badges": "wochen_champion"}}
+                )
+        
+        await db.weekly_challenges.update_one(
+            {"id": challenge["id"]},
+            {"$set": update}
+        )
+    
+    return {
+        "is_correct": is_correct,
+        "correct_answer": task["correct_answer"],
+        "explanation": task["explanation"],
+        "progress": f"{len(challenge['completed_task_ids'])}/{len(challenge['task_ids'])}",
+        "challenge_completed": len(challenge["completed_task_ids"]) == len(challenge["task_ids"]) if is_correct else False
+    }
+
+# ================== PARENT REPORT ==================
+
+@api_router.get("/reports/parent/{student_id}")
+async def get_parent_report(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Generate simple parent progress report"""
+    # Allow if admin or the student themselves
+    if current_user["role"] != "admin" and current_user["id"] != student_id:
+        raise HTTPException(status_code=403, detail="Kein Zugriff")
+    
+    student = await db.users.find_one({"id": student_id}, {"_id": 0})
+    if not student or student["role"] != "student":
+        raise HTTPException(status_code=404, detail="Schüler nicht gefunden")
+    
+    # Get last 30 days of activity
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    recent_answers = await db.answers.find({
+        "user_id": student_id,
+        "created_at": {"$gte": thirty_days_ago}
+    }).to_list(1000)
+    
+    total_answers = len(recent_answers)
+    correct_answers = sum(1 for a in recent_answers if a.get("is_correct", False))
+    
+    # Topic breakdown
+    topic_stats = {}
+    for answer in recent_answers:
+        task = await db.tasks.find_one({"id": answer["task_id"]}, {"_id": 0})
+        if task:
+            topic = task["topic"]
+            if topic not in topic_stats:
+                topic_stats[topic] = {"total": 0, "correct": 0}
+            topic_stats[topic]["total"] += 1
+            if answer.get("is_correct"):
+                topic_stats[topic]["correct"] += 1
+    
+    return {
+        "student_name": student["name"],
+        "grade": student.get("grade"),
+        "period": "Letzte 30 Tage",
+        "summary": {
+            "total_exercises": total_answers,
+            "correct_answers": correct_answers,
+            "success_rate": round((correct_answers / total_answers * 100) if total_answers > 0 else 0, 1),
+            "xp_earned": student.get("xp", 0),
+            "current_level": student.get("level", 1),
+            "badges_earned": len(student.get("badges", []))
+        },
+        "topic_breakdown": [
+            {
+                "topic": topic,
+                "exercises": stats["total"],
+                "correct": stats["correct"],
+                "rate": round((stats["correct"] / stats["total"] * 100) if stats["total"] > 0 else 0, 1)
+            }
+            for topic, stats in topic_stats.items()
+        ],
+        "badges": [EDUCATIONAL_BADGES.get(b, {"name": b}) for b in student.get("badges", [])],
+        "recommendation": "Weiter so! Regelmäßiges Üben führt zum Erfolg." if correct_answers / total_answers > 0.6 if total_answers > 0 else True else "Mehr Übung in den schwächeren Themen würde helfen."
+    }
+
+# ================== CLASS MODE (Teacher assigns exercises) ==================
+
+class ClassAssignment(BaseModel):
+    class_name: str
+    student_ids: List[str]
+    task_ids: List[str]
+    due_date: Optional[str] = None
+    title: str
+
+@api_router.post("/class/assign")
+async def create_class_assignment(assignment: ClassAssignment, admin: dict = Depends(get_admin_user)):
+    """Teacher creates assignment for a class"""
+    assignment_doc = {
+        "id": str(uuid.uuid4()),
+        "class_name": assignment.class_name,
+        "student_ids": assignment.student_ids,
+        "task_ids": assignment.task_ids,
+        "due_date": assignment.due_date,
+        "title": assignment.title,
+        "created_by": admin["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "submissions": {}
+    }
+    
+    await db.class_assignments.insert_one(assignment_doc)
+    return {"message": "Aufgabe zugewiesen", "assignment_id": assignment_doc["id"]}
+
+@api_router.get("/class/assignments")
+async def get_my_assignments(current_user: dict = Depends(get_current_user)):
+    """Get assignments for current student"""
+    if current_user["role"] == "admin":
+        # Admin sees all assignments they created
+        assignments = await db.class_assignments.find(
+            {"created_by": current_user["id"]},
+            {"_id": 0}
+        ).to_list(100)
+    else:
+        # Student sees their assignments
+        assignments = await db.class_assignments.find(
+            {"student_ids": current_user["id"]},
+            {"_id": 0}
+        ).to_list(100)
+    
+    return assignments
+
+# ================== NRW HAUPTSCHULE CURRICULUM TASKS ==================
+
+@api_router.post("/seed/nrw-hauptschule")
+async def seed_nrw_hauptschule_tasks():
+    """Add curriculum-aligned tasks for NRW Hauptschule grades 5-10"""
+    tasks = get_nrw_hauptschule_tasks()
+    
+    for task in tasks:
+        task["id"] = str(uuid.uuid4())
+        task["created_at"] = datetime.now(timezone.utc).isoformat()
+        task["created_by"] = "system"
+        task["curriculum"] = "NRW-Hauptschule"
+    
+    if tasks:
+        await db.tasks.insert_many(tasks)
+    
+    # Count tasks per grade
+    counts = {}
+    for grade in range(5, 11):
+        counts[f"grade_{grade}"] = await db.tasks.count_documents({"grade": grade})
+    
+    return {"message": "NRW Hauptschule Aufgaben hinzugefügt", "added": len(tasks), "counts": counts}
+
+def get_nrw_hauptschule_tasks():
+    """NRW Hauptschule curriculum-aligned practical tasks"""
+    tasks = []
+    
+    # ===== KLASSE 5 - Grundlagen =====
+    tasks.extend([
+        # Grundrechenarten - Alltagsbezug
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Du kaufst 3 Hefte für je 2,50 €. Wie viel bezahlst du?", "task_type": "free_text", "options": None, "correct_answer": "7,50", "explanation": "3 × 2,50 € = 7,50 €", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Du hast 20 € und kaufst etwas für 13,75 €. Wie viel Wechselgeld bekommst du?", "task_type": "free_text", "options": None, "correct_answer": "6,25", "explanation": "20 € - 13,75 € = 6,25 €", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Eine Klasse mit 24 Schülern wird in 4 gleiche Gruppen geteilt. Wie viele Schüler sind in jeder Gruppe?", "task_type": "free_text", "options": None, "correct_answer": "6", "explanation": "24 ÷ 4 = 6 Schüler pro Gruppe", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Runde 4.567 auf Hunderter.", "task_type": "free_text", "options": None, "correct_answer": "4600", "explanation": "4.567 → 4.600 (67 wird aufgerundet)", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Grundrechenarten", "question": "Was ist 125 × 8?", "task_type": "free_text", "options": None, "correct_answer": "1000", "explanation": "125 × 8 = 1000", "xp_reward": 10, "difficulty": "mittel"},
+        
+        # Einheiten und Umrechnungen
+        {"grade": 5, "topic": "Einheiten", "question": "Wie viele Zentimeter sind 2,5 Meter?", "task_type": "free_text", "options": None, "correct_answer": "250", "explanation": "2,5 m × 100 = 250 cm", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Einheiten", "question": "Wie viele Gramm sind 3 kg?", "task_type": "free_text", "options": None, "correct_answer": "3000", "explanation": "3 kg × 1000 = 3000 g", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Einheiten", "question": "Wie viele Minuten sind 2 Stunden und 15 Minuten?", "task_type": "free_text", "options": None, "correct_answer": "135", "explanation": "2 × 60 + 15 = 135 Minuten", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Einheiten", "question": "Wandle 4500 m in km um.", "task_type": "free_text", "options": None, "correct_answer": "4,5", "explanation": "4500 m ÷ 1000 = 4,5 km", "xp_reward": 10, "difficulty": "mittel"},
+        {"grade": 5, "topic": "Einheiten", "question": "Ein Film dauert 95 Minuten. Wie viele Stunden und Minuten sind das?", "task_type": "multiple_choice", "options": ["1 Stunde 25 Minuten", "1 Stunde 35 Minuten", "1 Stunde 45 Minuten", "2 Stunden 5 Minuten"], "correct_answer": "1 Stunde 35 Minuten", "explanation": "95 ÷ 60 = 1 Rest 35", "xp_reward": 10, "difficulty": "mittel"},
+        
+        # Geometrie Grundlagen
+        {"grade": 5, "topic": "Geometrie Grundlagen", "question": "Berechne den Umfang eines Quadrats mit Seitenlänge 7 cm.", "task_type": "free_text", "options": None, "correct_answer": "28", "explanation": "U = 4 × a = 4 × 7 = 28 cm", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Geometrie Grundlagen", "question": "Ein Rechteck hat die Seiten 5 cm und 3 cm. Wie groß ist die Fläche?", "task_type": "free_text", "options": None, "correct_answer": "15", "explanation": "A = a × b = 5 × 3 = 15 cm²", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Geometrie Grundlagen", "question": "Wie viele Ecken hat ein Dreieck?", "task_type": "multiple_choice", "options": ["2", "3", "4", "5"], "correct_answer": "3", "explanation": "Ein Dreieck hat 3 Ecken.", "xp_reward": 5, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Geometrie Grundlagen", "question": "Berechne den Umfang eines Rechtecks mit a = 8 cm und b = 5 cm.", "task_type": "free_text", "options": None, "correct_answer": "26", "explanation": "U = 2 × (a + b) = 2 × (8 + 5) = 26 cm", "xp_reward": 10, "difficulty": "leicht"},
+        
+        # Brüche einführen
+        {"grade": 5, "topic": "Brüche einführen", "question": "Wie viel ist 1/4 von 20?", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "20 ÷ 4 = 5", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Brüche einführen", "question": "Welcher Bruch ist größer: 1/2 oder 1/3?", "task_type": "multiple_choice", "options": ["1/2", "1/3", "Beide gleich"], "correct_answer": "1/2", "explanation": "1/2 = 0,5 und 1/3 ≈ 0,33. Also ist 1/2 größer.", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Brüche einführen", "question": "Ein Pizza wird in 8 Stücke geteilt. Du isst 3 Stücke. Welchen Bruchteil hast du gegessen?", "task_type": "free_text", "options": None, "correct_answer": "3/8", "explanation": "3 von 8 Stücken = 3/8", "xp_reward": 10, "difficulty": "leicht"},
+        
+        # Dezimalzahlen
+        {"grade": 5, "topic": "Dezimalzahlen", "question": "Was ergibt 2,4 + 1,8?", "task_type": "free_text", "options": None, "correct_answer": "4,2", "explanation": "2,4 + 1,8 = 4,2", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 5, "topic": "Dezimalzahlen", "question": "Ordne: 0,5 ; 0,35 ; 0,8. Welche Zahl ist am kleinsten?", "task_type": "multiple_choice", "options": ["0,5", "0,35", "0,8"], "correct_answer": "0,35", "explanation": "0,35 < 0,5 < 0,8", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # ===== KLASSE 6 - Vertiefung =====
+    tasks.extend([
+        # Bruchrechnung
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Was ergibt 2/3 + 1/6?", "task_type": "free_text", "options": None, "correct_answer": "5/6", "explanation": "2/3 = 4/6, also 4/6 + 1/6 = 5/6", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Was ergibt 3/4 - 1/2?", "task_type": "free_text", "options": None, "correct_answer": "1/4", "explanation": "3/4 - 2/4 = 1/4", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Berechne 2/5 × 10.", "task_type": "free_text", "options": None, "correct_answer": "4", "explanation": "2/5 × 10 = 20/5 = 4", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Was ergibt 3/4 ÷ 2?", "task_type": "free_text", "options": None, "correct_answer": "3/8", "explanation": "3/4 ÷ 2 = 3/4 × 1/2 = 3/8", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Bruchrechnung", "question": "Kürze den Bruch 12/18.", "task_type": "free_text", "options": None, "correct_answer": "2/3", "explanation": "12/18 ÷ 6/6 = 2/3", "xp_reward": 10, "difficulty": "leicht"},
+        
+        # Prozentrechnung Einführung
+        {"grade": 6, "topic": "Prozentrechnung", "question": "Was sind 25% von 80?", "task_type": "free_text", "options": None, "correct_answer": "20", "explanation": "25% = 1/4, also 80 ÷ 4 = 20", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Prozentrechnung", "question": "Ein Pullover kostet 40 €. Im Sale gibt es 20% Rabatt. Wie viel sparst du?", "task_type": "free_text", "options": None, "correct_answer": "8", "explanation": "20% von 40 € = 8 €", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Prozentrechnung", "question": "Was sind 10% von 350?", "task_type": "free_text", "options": None, "correct_answer": "35", "explanation": "350 ÷ 10 = 35", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Prozentrechnung", "question": "Du hast 15 von 20 Aufgaben richtig. Wie viel Prozent ist das?", "task_type": "free_text", "options": None, "correct_answer": "75", "explanation": "15/20 = 0,75 = 75%", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Geometrie - Flächen
+        {"grade": 6, "topic": "Flächen und Umfang", "question": "Berechne die Fläche eines Dreiecks mit Grundseite 8 cm und Höhe 6 cm.", "task_type": "free_text", "options": None, "correct_answer": "24", "explanation": "A = (g × h) / 2 = (8 × 6) / 2 = 24 cm²", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 6, "topic": "Flächen und Umfang", "question": "Ein Parallelogramm hat die Grundseite 10 cm und die Höhe 4 cm. Wie groß ist die Fläche?", "task_type": "free_text", "options": None, "correct_answer": "40", "explanation": "A = g × h = 10 × 4 = 40 cm²", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Negative Zahlen Einführung
+        {"grade": 6, "topic": "Negative Zahlen", "question": "Was ergibt 5 - 8?", "task_type": "free_text", "options": None, "correct_answer": "-3", "explanation": "5 - 8 = -3", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Negative Zahlen", "question": "Die Temperatur ist -5°C. Sie steigt um 12°C. Wie warm ist es jetzt?", "task_type": "free_text", "options": None, "correct_answer": "7", "explanation": "-5 + 12 = 7°C", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 6, "topic": "Negative Zahlen", "question": "Was ergibt (-4) + (-6)?", "task_type": "free_text", "options": None, "correct_answer": "-10", "explanation": "Zwei negative Zahlen addieren: -4 + (-6) = -10", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # ===== KLASSE 7 - Rationale Zahlen & Gleichungen =====
+    tasks.extend([
+        # Rationale Zahlen
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Was ergibt (-3) × (-4)?", "task_type": "free_text", "options": None, "correct_answer": "12", "explanation": "Minus mal Minus = Plus: -3 × -4 = 12", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Was ergibt (-20) ÷ 5?", "task_type": "free_text", "options": None, "correct_answer": "-4", "explanation": "-20 ÷ 5 = -4", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Was ergibt (-7) × 3?", "task_type": "free_text", "options": None, "correct_answer": "-21", "explanation": "-7 × 3 = -21", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Rationale Zahlen", "question": "Ordne: -5, 2, -1, 0. Von klein nach groß:", "task_type": "multiple_choice", "options": ["-5, -1, 0, 2", "-1, -5, 0, 2", "0, -1, -5, 2", "2, 0, -1, -5"], "correct_answer": "-5, -1, 0, 2", "explanation": "-5 < -1 < 0 < 2", "xp_reward": 10, "difficulty": "leicht"},
+        
+        # Einfache Gleichungen
+        {"grade": 7, "topic": "Gleichungen", "question": "Löse: x + 7 = 15", "task_type": "free_text", "options": None, "correct_answer": "8", "explanation": "x = 15 - 7 = 8", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Gleichungen", "question": "Löse: 3x = 21", "task_type": "free_text", "options": None, "correct_answer": "7", "explanation": "x = 21 ÷ 3 = 7", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Gleichungen", "question": "Löse: 2x + 5 = 17", "task_type": "free_text", "options": None, "correct_answer": "6", "explanation": "2x = 12, x = 6", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 7, "topic": "Gleichungen", "question": "Löse: x/4 = 8", "task_type": "free_text", "options": None, "correct_answer": "32", "explanation": "x = 8 × 4 = 32", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Gleichungen", "question": "Löse: 5x - 3 = 22", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "5x = 25, x = 5", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Proportionalität
+        {"grade": 7, "topic": "Proportionalität", "question": "3 Äpfel kosten 1,50 €. Was kosten 9 Äpfel?", "task_type": "free_text", "options": None, "correct_answer": "4,50", "explanation": "9 ist 3× so viel wie 3, also 3 × 1,50 = 4,50 €", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Proportionalität", "question": "Ein Auto fährt 60 km in 1 Stunde. Wie weit fährt es in 2,5 Stunden?", "task_type": "free_text", "options": None, "correct_answer": "150", "explanation": "60 × 2,5 = 150 km", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 7, "topic": "Proportionalität", "question": "5 Arbeiter brauchen 10 Tage. Wie lange brauchen 10 Arbeiter?", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "Antiproportional: doppelte Arbeiter = halbe Zeit: 10 ÷ 2 = 5 Tage", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Prozentrechnung erweitert
+        {"grade": 7, "topic": "Prozentrechnung", "question": "Ein Fahrrad kostet 250 €. Es wird um 20% teurer. Was ist der neue Preis?", "task_type": "free_text", "options": None, "correct_answer": "300", "explanation": "20% von 250 = 50, also 250 + 50 = 300 €", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 7, "topic": "Prozentrechnung", "question": "Von 500 € Gehalt werden 19% Steuern abgezogen. Wie viel bleibt übrig?", "task_type": "free_text", "options": None, "correct_answer": "405", "explanation": "19% von 500 = 95, also 500 - 95 = 405 €", "xp_reward": 15, "difficulty": "mittel"},
+    ])
+    
+    # ===== KLASSE 8 - Terme & Geometrie =====
+    tasks.extend([
+        # Terme
+        {"grade": 8, "topic": "Terme", "question": "Vereinfache: 3a + 5a", "task_type": "free_text", "options": None, "correct_answer": "8a", "explanation": "3a + 5a = 8a (gleiche Variablen addieren)", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Terme", "question": "Vereinfache: 4x - 2x + 5", "task_type": "free_text", "options": None, "correct_answer": "2x + 5", "explanation": "4x - 2x = 2x, also 2x + 5", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Terme", "question": "Multipliziere aus: 3(x + 4)", "task_type": "free_text", "options": None, "correct_answer": "3x + 12", "explanation": "3 × x + 3 × 4 = 3x + 12", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 8, "topic": "Terme", "question": "Klammer aus: 6x + 12", "task_type": "free_text", "options": None, "correct_answer": "6(x + 2)", "explanation": "GGT ist 6: 6x + 12 = 6(x + 2)", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Terme", "question": "Was ist (2x)²?", "task_type": "free_text", "options": None, "correct_answer": "4x²", "explanation": "(2x)² = 2² × x² = 4x²", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Lineare Gleichungen
+        {"grade": 8, "topic": "Lineare Gleichungen", "question": "Löse: 3x + 2 = 5x - 4", "task_type": "free_text", "options": None, "correct_answer": "3", "explanation": "3x - 5x = -4 - 2, also -2x = -6, x = 3", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Lineare Gleichungen", "question": "Löse: 2(x - 3) = 10", "task_type": "free_text", "options": None, "correct_answer": "8", "explanation": "2x - 6 = 10, 2x = 16, x = 8", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Kreis
+        {"grade": 8, "topic": "Kreis", "question": "Berechne den Umfang eines Kreises mit r = 7 cm. (π ≈ 3,14)", "task_type": "free_text", "options": None, "correct_answer": "43,96", "explanation": "U = 2πr = 2 × 3,14 × 7 = 43,96 cm", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Kreis", "question": "Berechne die Fläche eines Kreises mit r = 5 cm. (π ≈ 3,14)", "task_type": "free_text", "options": None, "correct_answer": "78,5", "explanation": "A = πr² = 3,14 × 25 = 78,5 cm²", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Pythagoras
+        {"grade": 8, "topic": "Satz des Pythagoras", "question": "Ein rechtwinkliges Dreieck hat die Katheten a=3cm und b=4cm. Wie lang ist die Hypotenuse c?", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "c² = a² + b² = 9 + 16 = 25, c = 5 cm", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 8, "topic": "Satz des Pythagoras", "question": "Die Hypotenuse ist 13 cm, eine Kathete ist 5 cm. Wie lang ist die andere Kathete?", "task_type": "free_text", "options": None, "correct_answer": "12", "explanation": "b² = c² - a² = 169 - 25 = 144, b = 12 cm", "xp_reward": 20, "difficulty": "schwer"},
+    ])
+    
+    # ===== KLASSE 9 - Funktionen & Prozent =====
+    tasks.extend([
+        # Lineare Funktionen
+        {"grade": 9, "topic": "Lineare Funktionen", "question": "f(x) = 2x + 3. Was ist f(4)?", "task_type": "free_text", "options": None, "correct_answer": "11", "explanation": "f(4) = 2×4 + 3 = 8 + 3 = 11", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Lineare Funktionen", "question": "Welche Steigung hat die Gerade y = 3x - 2?", "task_type": "free_text", "options": None, "correct_answer": "3", "explanation": "Bei y = mx + n ist m die Steigung. Hier m = 3", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Lineare Funktionen", "question": "Wo schneidet y = 2x + 6 die y-Achse?", "task_type": "free_text", "options": None, "correct_answer": "6", "explanation": "y-Achsenabschnitt ist der Wert für x=0: y = 6", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Lineare Funktionen", "question": "Bestimme die Nullstelle von f(x) = 4x - 8", "task_type": "free_text", "options": None, "correct_answer": "2", "explanation": "0 = 4x - 8, 4x = 8, x = 2", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Zinsrechnung
+        {"grade": 9, "topic": "Zinsrechnung", "question": "Du legst 1000 € für 1 Jahr zu 3% Zinsen an. Wie viel Zinsen bekommst du?", "task_type": "free_text", "options": None, "correct_answer": "30", "explanation": "Z = K × p / 100 = 1000 × 3 / 100 = 30 €", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 9, "topic": "Zinsrechnung", "question": "Du legst 500 € für 6 Monate zu 4% Zinsen an. Wie viel Zinsen bekommst du?", "task_type": "free_text", "options": None, "correct_answer": "10", "explanation": "Z = 500 × 4 × 6 / (100 × 12) = 10 €", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Zinsrechnung", "question": "2000 € werden zu 2,5% verzinst. Wie viel hast du nach 1 Jahr?", "task_type": "free_text", "options": None, "correct_answer": "2050", "explanation": "Zinsen: 2000 × 2,5 / 100 = 50 €. Gesamt: 2050 €", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Quadratische Gleichungen (einfach)
+        {"grade": 9, "topic": "Quadratische Gleichungen", "question": "Löse: x² = 25", "task_type": "multiple_choice", "options": ["x = 5", "x = -5", "x = 5 oder x = -5", "x = 25"], "correct_answer": "x = 5 oder x = -5", "explanation": "√25 = ±5, also x = 5 oder x = -5", "xp_reward": 15, "difficulty": "mittel"},
+        {"grade": 9, "topic": "Quadratische Gleichungen", "question": "Löse: x² - 9 = 0", "task_type": "multiple_choice", "options": ["x = 3", "x = -3", "x = 3 oder x = -3", "x = 9"], "correct_answer": "x = 3 oder x = -3", "explanation": "x² = 9, also x = ±3", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Sachaufgaben
+        {"grade": 9, "topic": "Sachaufgaben", "question": "Ein Handyvertrag kostet 15 € Grundgebühr plus 0,10 € pro SMS. Wie viel zahlst du bei 50 SMS?", "task_type": "free_text", "options": None, "correct_answer": "20", "explanation": "15 + 50 × 0,10 = 15 + 5 = 20 €", "xp_reward": 10, "difficulty": "leicht"},
+    ])
+    
+    # ===== KLASSE 10 - Abschluss =====
+    tasks.extend([
+        # Quadratische Funktionen
+        {"grade": 10, "topic": "Quadratische Funktionen", "question": "f(x) = x² - 4. Was ist f(3)?", "task_type": "free_text", "options": None, "correct_answer": "5", "explanation": "f(3) = 3² - 4 = 9 - 4 = 5", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Quadratische Funktionen", "question": "Wo ist der Scheitelpunkt von f(x) = x²?", "task_type": "multiple_choice", "options": ["(0,0)", "(1,1)", "(0,1)", "(1,0)"], "correct_answer": "(0,0)", "explanation": "Bei f(x) = x² ist der Scheitelpunkt bei (0,0)", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Quadratische Funktionen", "question": "Bestimme die Nullstellen von f(x) = x² - 16", "task_type": "multiple_choice", "options": ["x = 4", "x = -4", "x = 4 und x = -4", "keine"], "correct_answer": "x = 4 und x = -4", "explanation": "x² = 16, also x = ±4", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Trigonometrie Grundlagen
+        {"grade": 10, "topic": "Trigonometrie", "question": "In einem rechtwinkligen Dreieck: sin(α) = Gegenkathete / ?", "task_type": "multiple_choice", "options": ["Ankathete", "Hypotenuse", "Gegenkathete", "Keine"], "correct_answer": "Hypotenuse", "explanation": "sin(α) = Gegenkathete / Hypotenuse", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Trigonometrie", "question": "cos(60°) = ?", "task_type": "multiple_choice", "options": ["0", "0,5", "1", "√3/2"], "correct_answer": "0,5", "explanation": "cos(60°) = 0,5", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Trigonometrie", "question": "tan(45°) = ?", "task_type": "free_text", "options": None, "correct_answer": "1", "explanation": "tan(45°) = sin(45°)/cos(45°) = 1", "xp_reward": 10, "difficulty": "leicht"},
+        
+        # Wahrscheinlichkeitsrechnung
+        {"grade": 10, "topic": "Wahrscheinlichkeit", "question": "Ein Würfel wird geworfen. Wie groß ist die Wahrscheinlichkeit für eine 6?", "task_type": "free_text", "options": None, "correct_answer": "1/6", "explanation": "1 günstig von 6 möglich = 1/6", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Wahrscheinlichkeit", "question": "In einer Urne sind 3 rote und 7 blaue Kugeln. Wie groß ist P(rot)?", "task_type": "free_text", "options": None, "correct_answer": "0,3", "explanation": "P(rot) = 3/10 = 0,3 oder 30%", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Wahrscheinlichkeit", "question": "Eine Münze wird 2 Mal geworfen. Wie groß ist P(2× Kopf)?", "task_type": "free_text", "options": None, "correct_answer": "0,25", "explanation": "P = 0,5 × 0,5 = 0,25 oder 25%", "xp_reward": 15, "difficulty": "mittel"},
+        
+        # Körperberechnungen
+        {"grade": 10, "topic": "Körper", "question": "Berechne das Volumen eines Quaders mit a=4cm, b=3cm, c=5cm.", "task_type": "free_text", "options": None, "correct_answer": "60", "explanation": "V = a × b × c = 4 × 3 × 5 = 60 cm³", "xp_reward": 10, "difficulty": "leicht"},
+        {"grade": 10, "topic": "Körper", "question": "Berechne das Volumen eines Zylinders mit r=3cm und h=10cm. (π≈3,14)", "task_type": "free_text", "options": None, "correct_answer": "282,6", "explanation": "V = π × r² × h = 3,14 × 9 × 10 = 282,6 cm³", "xp_reward": 15, "difficulty": "mittel"},
+    ])
+    
+    return tasks
+
 # ================== ROOT ROUTE ==================
 
 @api_router.get("/")
 async def root():
-    return {"message": "Willkommen bei MatheVilla API", "version": "1.0.0"}
+    return {"message": "Willkommen bei Mathnashed API", "version": "2.0.0"}
 
 # Include router
 app.include_router(api_router)
