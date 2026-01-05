@@ -8,9 +8,11 @@ class MatheVillaAPITester:
         self.base_url = base_url
         self.token = None
         self.admin_token = None
+        self.student_token = None
         self.tests_run = 0
         self.tests_passed = 0
         self.student_id = None
+        self.student_user_id = None
         self.admin_id = None
         self.reset_token = None
 
