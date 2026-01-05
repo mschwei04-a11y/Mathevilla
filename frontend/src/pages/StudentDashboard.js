@@ -254,6 +254,24 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
 
+            {/* Weekly Challenge */}
+            <Card className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white border-0 shadow-lg" data-testid="weekly-challenge-card">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-8 h-8" />
+                  <div>
+                    <h3 className="font-bold text-lg">Weekly Challenge</h3>
+                    <p className="text-purple-100 text-sm">+100 Bonus-XP</p>
+                  </div>
+                </div>
+                <Link to="/weekly-challenge">
+                  <Button className="w-full bg-white text-purple-600 hover:bg-purple-50 font-semibold">
+                    Zur Challenge
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* AI Recommendation */}
             {aiRecommendation && (
               <Card className="bg-white border-emerald-100 shadow-md" data-testid="ai-recommendation-card">
@@ -277,16 +295,39 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 {user?.badges && user.badges.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {user.badges.map((badge) => (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {user.badges.slice(0, 4).map((badge) => (
                       <span key={badge} className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
                         {badge}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-emerald-500 text-sm">Löse mehr Aufgaben, um Badges zu verdienen!</p>
+                  <p className="text-emerald-500 text-sm mb-3">Löse mehr Aufgaben, um Badges zu verdienen!</p>
                 )}
+                <Link to="/badges">
+                  <Button variant="outline" size="sm" className="w-full border-amber-200 text-amber-700 hover:bg-amber-50">
+                    Alle Badges anzeigen
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Quick Links */}
+            <Card className="bg-white border-emerald-100 shadow-md">
+              <CardContent className="p-4 space-y-2">
+                <Link to="/report" className="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 transition-colors">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">Mein Fortschrittsbericht</span>
+                </Link>
+                <Link to="/progress" className="flex items-center gap-3 p-3 rounded-lg hover:bg-emerald-50 transition-colors">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Target className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">Detaillierter Fortschritt</span>
+                </Link>
               </CardContent>
             </Card>
 
