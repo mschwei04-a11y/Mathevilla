@@ -6,13 +6,14 @@ import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
-import { ArrowLeft, BookOpen, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Brain, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 export default function TopicSelection() {
   const { grade } = useParams();
   const { user } = useAuth();
   const [topics, setTopics] = useState([]);
   const [progress, setProgress] = useState({});
+  const [readiness, setReadiness] = useState({});
   const [loading, setLoading] = useState(true);
 
   const currentGrade = grade || user?.grade || 5;
@@ -34,10 +35,44 @@ export default function TopicSelection() {
         progressMap[p.topic] = p;
       });
       setProgress(progressMap);
+
+      // Load readiness for each topic
+      const readinessMap = {};
+      for (const topic of topicsRes.data.topics) {
+        try {
+          const res = await api.getTestReadiness(topic);
+          readinessMap[topic] = res.data;
+        } catch (e) {
+          // Ignore errors for individual topics
+        }
+      }
+      setReadiness(readinessMap);
     } catch (error) {
       console.error('Error loading topics:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getReadinessIcon = (status) => {
+    switch (status) {
+      case 'ready':
+        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+      case 'needs_review':
+        return <AlertCircle className="w-4 h-4 text-amber-500" />;
+      default:
+        return <XCircle className="w-4 h-4 text-slate-300" />;
+    }
+  };
+
+  const getReadinessText = (status) => {
+    switch (status) {
+      case 'ready':
+        return 'Testbereit';
+      case 'needs_review':
+        return 'Wiederholung nötig';
+      default:
+        return 'Noch üben';
     }
   };
 
