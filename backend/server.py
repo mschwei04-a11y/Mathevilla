@@ -1143,7 +1143,7 @@ Antworte im JSON-Format:
 
     try:
         chat = LlmChat(
-            api_key=os.environ.get("LLM_KEY"),
+            api_key=LLM_KEY,
             model="gpt-4o-mini",
             session_id=f"explain_{current_user['id']}_{request.task_id}"
         )
