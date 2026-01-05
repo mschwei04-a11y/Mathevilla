@@ -423,6 +423,229 @@ class MatheVillaAPITester:
         )
         return success
 
+    def test_student_login(self):
+        """Test student login with max2@test.de / test123"""
+        student_credentials = {
+            "email": "max2@test.de",
+            "password": "test123"
+        }
+        
+        success, response = self.run_test(
+            "Student Login (max2@test.de)",
+            "POST",
+            "auth/login",
+            200,
+            data=student_credentials
+        )
+        
+        if success and 'access_token' in response:
+            self.student_token = response['access_token']
+            self.student_user_id = response['user']['id']
+            print(f"   Student User ID: {self.student_user_id}")
+            return True
+        return False
+
+    def test_feature_flags(self):
+        """Test Feature Flags System - GET /api/features"""
+        success, response = self.run_test(
+            "Get Feature Flags",
+            "GET",
+            "features",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            print(f"   Feature flags available: {list(response.keys()) if isinstance(response, dict) else 'List format'}")
+        
+        return success
+
+    def test_adaptive_recommendations(self):
+        """Test Adaptive Recommendations (Hybrid AI) - GET /api/recommendations/adaptive"""
+        success, response = self.run_test(
+            "Get Adaptive Recommendations",
+            "GET",
+            "recommendations/adaptive",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            print(f"   Adaptive recommendations received")
+        
+        return success
+
+    def test_readiness_indicator(self):
+        """Test Test Readiness Indicator - GET /api/readiness/Grundrechenarten"""
+        success, response = self.run_test(
+            "Get Readiness Status for Grundrechenarten",
+            "GET",
+            "readiness/Grundrechenarten",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            print(f"   Readiness status: {response.get('status', 'Unknown')}")
+        
+        return success
+
+    def test_educational_badges_available(self):
+        """Test Educational Badges System - GET /api/badges/available"""
+        success, response = self.run_test(
+            "Get Available Badges",
+            "GET",
+            "badges/available",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            badge_count = len(response) if isinstance(response, list) else 'Unknown'
+            print(f"   Available badges: {badge_count}")
+        
+        return success
+
+    def test_educational_badges_check(self):
+        """Test Educational Badges System - GET /api/badges/check"""
+        success, response = self.run_test(
+            "Check and Award Badges",
+            "GET",
+            "badges/check",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            print(f"   Badge check completed")
+        
+        return success
+
+    def test_weekly_challenge(self):
+        """Test Weekly Challenge - GET /api/challenges/weekly"""
+        success, response = self.run_test(
+            "Get Weekly Challenge",
+            "GET",
+            "challenges/weekly",
+            200,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            task_count = len(response.get('tasks', [])) if isinstance(response, dict) else 'Unknown'
+            print(f"   Weekly challenge tasks: {task_count}")
+            if isinstance(response, dict) and 'tasks' in response:
+                if len(response['tasks']) == 5:
+                    print("   ✅ Correct number of tasks (5)")
+                else:
+                    print(f"   ⚠️  Expected 5 tasks, got {len(response['tasks'])}")
+        
+        return success
+
+    def test_practice_mode(self):
+        """Test Practice Mode (No XP) - POST /api/practice/submit"""
+        if not hasattr(self, 'task_id') or not self.task_id:
+            print("❌ No task ID available for practice mode test")
+            return False
+            
+        practice_data = {
+            "task_id": self.task_id,
+            "answer": "5/6"
+        }
+        
+        success, response = self.run_test(
+            "Submit Practice Mode Answer",
+            "POST",
+            "practice/submit",
+            200,
+            data=practice_data,
+            headers={'Authorization': f'Bearer {self.token}'}
+        )
+        
+        if success and response:
+            xp_earned = response.get('xp_earned', 'Unknown')
+            print(f"   XP earned in practice mode: {xp_earned} (should be 0)")
+            if xp_earned == 0:
+                print("   ✅ Correct - No XP awarded in practice mode")
+            else:
+                print(f"   ⚠️  Expected 0 XP, got {xp_earned}")
+        
+        return success
+
+    def test_parent_report(self):
+        """Test Parent Report - GET /api/reports/parent/{student_id}"""
+        if not hasattr(self, 'student_user_id') or not self.student_user_id:
+            print("❌ No student ID available for parent report test")
+            return False
+            
+        success, response = self.run_test(
+            f"Get Parent Report for Student {self.student_user_id}",
+            "GET",
+            f"reports/parent/{self.student_user_id}",
+            200,
+            headers={'Authorization': f'Bearer {self.admin_token}'}
+        )
+        
+        if success and response:
+            print(f"   Parent report generated for student")
+        
+        return success
+
+    def test_nrw_curriculum_tasks_grade5(self):
+        """Test NRW Curriculum Tasks - GET /api/admin/tasks?grade=5"""
+        if not self.admin_token:
+            print("❌ No admin token available")
+            return False
+            
+        success, response = self.run_test(
+            "Get NRW Curriculum Tasks Grade 5",
+            "GET",
+            "admin/tasks?grade=5",
+            200,
+            headers={'Authorization': f'Bearer {self.admin_token}'}
+        )
+        
+        if success and response:
+            task_count = len(response) if isinstance(response, list) else 0
+            print(f"   Grade 5 tasks: {task_count}")
+            if task_count >= 40:
+                print("   ✅ Sufficient tasks (~40+ as expected)")
+            else:
+                print(f"   ⚠️  Expected ~40+ tasks, got {task_count}")
+        
+        return success
+
+    def test_nrw_curriculum_all_grades(self):
+        """Test NRW Curriculum Tasks for all grades 5-10"""
+        if not self.admin_token:
+            print("❌ No admin token available")
+            return False
+            
+        all_grades_success = True
+        total_tasks = 0
+        
+        for grade in range(5, 11):
+            success, response = self.run_test(
+                f"Get NRW Curriculum Tasks Grade {grade}",
+                "GET",
+                f"admin/tasks?grade={grade}",
+                200,
+                headers={'Authorization': f'Bearer {self.admin_token}'}
+            )
+            
+            if success and response:
+                task_count = len(response) if isinstance(response, list) else 0
+                total_tasks += task_count
+                print(f"   Grade {grade}: {task_count} tasks")
+                if task_count < 40:
+                    print(f"   ⚠️  Grade {grade} has fewer than 40 tasks")
+                    all_grades_success = False
+            else:
+                all_grades_success = False
+        
+        print(f"   Total tasks across all grades: {total_tasks}")
+        return all_grades_success
+
     def test_protected_routes_without_auth(self):
         """Test that protected routes require authentication"""
         print("\n🔒 Testing protected routes without authentication...")
