@@ -1568,7 +1568,7 @@ async def get_parent_report(student_id: str, current_user: dict = Depends(get_cu
             for topic, stats in topic_stats.items()
         ],
         "badges": [EDUCATIONAL_BADGES.get(b, {"name": b}) for b in student.get("badges", [])],
-        "recommendation": "Weiter so! Regelmäßiges Üben führt zum Erfolg." if correct_answers / total_answers > 0.6 if total_answers > 0 else True else "Mehr Übung in den schwächeren Themen würde helfen."
+        "recommendation": "Weiter so! Regelmäßiges Üben führt zum Erfolg." if (total_answers > 0 and correct_answers / total_answers > 0.6) else "Mehr Übung in den schwächeren Themen würde helfen."
     }
 
 # ================== CLASS MODE (Teacher assigns exercises) ==================
