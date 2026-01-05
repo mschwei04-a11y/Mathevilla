@@ -26,9 +26,12 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # JWT Config
-JWT_SECRET = os.environ.get('JWT_SECRET', 'mathevilla_secret')
+JWT_SECRET = os.environ.get('JWT_SECRET', 'mathnashed_secret')
 JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get('ACCESS_TOKEN_EXPIRE_MINUTES', 1440))
+
+# LLM Key for AI features
+LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', os.environ.get('LLM_KEY', ''))
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
