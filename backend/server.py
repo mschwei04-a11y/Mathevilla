@@ -1447,7 +1447,8 @@ async def get_weekly_challenge(current_user: dict = Depends(get_current_user)):
     
     await db.weekly_challenges.insert_one(challenge)
     challenge["tasks"] = selected_tasks
-    del challenge["_id"] if "_id" in challenge else None
+    if "_id" in challenge:
+        del challenge["_id"]
     
     return challenge
 
